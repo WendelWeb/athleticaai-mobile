@@ -1,0 +1,74 @@
+{
+  "expo": {
+    "name": "AthleticaAI",
+    "slug": "athleticaai-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "athleticaai",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "links": [
+      "athleticaai://",
+      "https://athleticaai.app"
+    ],
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.athleticaai.mobile",
+      "infoPlist": {
+        "NSCameraUsageDescription": "AthleticaAI needs camera access for form check and progress photos.",
+        "NSPhotoLibraryUsageDescription": "AthleticaAI needs photo library access to save your progress photos.",
+        "NSMicrophoneUsageDescription": "AthleticaAI needs microphone access for voice coaching features."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#000000"
+      },
+      "package": "com.athleticaai.mobile",
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECORD_AUDIO"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow AthleticaAI to access your camera for form check and progress photos."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow AthleticaAI to access your microphone for voice coaching."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    }
+  }
+}
+

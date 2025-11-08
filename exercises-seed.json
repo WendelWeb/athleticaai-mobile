@@ -1,0 +1,968 @@
+[
+  {
+    "name": "Barbell Squat",
+    "description": "Le roi absolu des exercices pour les jambes. Développe quadriceps, fessiers, et force globale.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800",
+    "video_url": "https://www.youtube.com/watch?v=ultWZbUMPL8",
+    "animation_url": null,
+    "category": "legs",
+    "difficulty_level": "intermediate",
+    "equipment_required": ["barbell", "squat_rack"],
+    "primary_muscles": ["quads", "glutes"],
+    "secondary_muscles": ["hamstrings", "calves", "core", "lower_back"],
+    "instructions": [
+      "Barre sur les trapèzes (high bar) ou en dessous (low bar)",
+      "Pieds largeur épaules, orteils légèrement vers l'extérieur",
+      "Descendez en poussant les hanches en arrière",
+      "Descendez jusqu'à cuisses parallèles au sol (ou plus)",
+      "Poussez dans les talons pour remonter"
+    ],
+    "tips": [
+      "Le ROI des exercices jambes/force",
+      "Maîtrisez la forme AVANT de charger lourd",
+      "Genoux TOUJOURS alignés avec les pieds",
+      "Profondeur minimum: cuisses parallèles"
+    ],
+    "common_mistakes": [
+      "Genoux qui rentrent vers l'intérieur (valgus)",
+      "Dos arrondi",
+      "Talons qui décollent",
+      "Demi-squats (amplitude insuffisante)"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Bench Press",
+    "description": "Le roi des exercices pectoraux. Développe force et masse du haut du corps.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800",
+    "video_url": "https://www.youtube.com/watch?v=rT7DgCr-3pg",
+    "animation_url": null,
+    "category": "chest",
+    "difficulty_level": "intermediate",
+    "equipment_required": ["barbell", "bench"],
+    "primary_muscles": ["chest", "pectorals"],
+    "secondary_muscles": ["front_delts", "triceps"],
+    "instructions": [
+      "Allongé sur le banc, pieds au sol",
+      "Saisissez la barre largeur supérieure aux épaules",
+      "Descendez contrôlé jusqu'à effleurer la poitrine",
+      "Poussez en contractant les pectoraux",
+      "Verrouillez les bras en haut"
+    ],
+    "tips": [
+      "ROI du développement des pectoraux",
+      "TOUJOURS utiliser un pareur pour charges lourdes",
+      "Omoplates serrées tout au long du mouvement",
+      "Pieds bien ancrés au sol"
+    ],
+    "common_mistakes": [
+      "Rebondir la barre sur la poitrine",
+      "Cambrer excessivement le dos",
+      "Décoller les fesses du banc",
+      "Verrouiller les coudes trop brutalement"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Deadlift",
+    "description": "L'exercice ultime pour le dos et la chaîne postérieure. Force totale du corps.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=800",
+    "video_url": "https://www.youtube.com/watch?v=op9kVnSso6Q",
+    "animation_url": null,
+    "category": "back",
+    "difficulty_level": "advanced",
+    "equipment_required": ["barbell"],
+    "primary_muscles": ["lower_back", "glutes", "hamstrings"],
+    "secondary_muscles": ["lats", "traps", "forearms", "core"],
+    "instructions": [
+      "Barre au-dessus des pieds (mi-pied)",
+      "Penchez-vous et saisissez la barre largeur épaules",
+      "Dos PLAT, poitrine sortie, hanches hautes",
+      "Poussez dans le sol avec les jambes",
+      "Tirez la barre le long des tibias/cuisses",
+      "Verrouillez en haut (hanches et genoux)"
+    ],
+    "tips": [
+      "Le ROI absolu de la force totale",
+      "Dos TOUJOURS plat (jamais arrondi)",
+      "Barre reste près du corps tout le mouvement",
+      "Commencez léger et progressez lentement"
+    ],
+    "common_mistakes": [
+      "Arrondir le dos (dangereux pour les lombaires)",
+      "Tirer avec les bras au lieu de pousser avec les jambes",
+      "Barre trop loin du corps",
+      "Hyperextension en haut"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Pull-Ups",
+    "description": "Tractions à la barre. Le roi des exercices pour le dos et la largeur.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=800",
+    "video_url": "https://www.youtube.com/watch?v=eGo4IYlbE5g",
+    "animation_url": null,
+    "category": "back",
+    "difficulty_level": "intermediate",
+    "equipment_required": ["pull_up_bar", "bodyweight"],
+    "primary_muscles": ["lats", "upper_back"],
+    "secondary_muscles": ["biceps", "forearms", "traps"],
+    "instructions": [
+      "Saisissez la barre en pronation (paumes vers l'avant)",
+      "Prise légèrement plus large que les épaules",
+      "Tirez-vous vers le haut jusqu'à menton au-dessus de la barre",
+      "Contractez le dos en haut",
+      "Descendez contrôlé jusqu'à bras tendus"
+    ],
+    "tips": [
+      "Le ROI de la largeur du dos",
+      "Amplitude complète obligatoire (bras tendus en bas)",
+      "Si trop dur: utilisez élastique ou machine assistée",
+      "Focus sur tirer avec les coudes, pas les mains"
+    ],
+    "common_mistakes": [
+      "Demi-reps (ne pas descendre complètement)",
+      "Se balancer (kipping)",
+      "Hausser les épaules",
+      "Tirer uniquement avec les bras"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Overhead Press",
+    "description": "Développé militaire. Le roi des exercices pour les épaules et la force overhead.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800",
+    "video_url": "https://www.youtube.com/watch?v=2yjwXTZQDDI",
+    "animation_url": null,
+    "category": "shoulders",
+    "difficulty_level": "intermediate",
+    "equipment_required": ["barbell"],
+    "primary_muscles": ["front_delts", "side_delts"],
+    "secondary_muscles": ["triceps", "upper_chest", "core"],
+    "instructions": [
+      "Debout, barre au niveau des épaules",
+      "Prise légèrement plus large que les épaules",
+      "Poussez la barre verticalement au-dessus de la tête",
+      "Passez la tête légèrement en arrière",
+      "Verrouillez les bras en haut",
+      "Redescendez contrôlé aux épaules"
+    ],
+    "tips": [
+      "ROI de la force des épaules",
+      "Gainez le core fort (pour stabilité)",
+      "Trajectoire verticale de la barre",
+      "Ne cambrez pas excessivement"
+    ],
+    "common_mistakes": [
+      "Cambrer excessivement le dos",
+      "Ne pas monter assez haut",
+      "Pousser la barre devant soi au lieu de verticalement",
+      "Déverrouiller les genoux"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Barbell Row",
+    "description": "Rowing à la barre. Excellent pour l'épaisseur du dos.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=800",
+    "video_url": "https://www.youtube.com/watch?v=9efgcAjQe7E",
+    "animation_url": null,
+    "category": "back",
+    "difficulty_level": "intermediate",
+    "equipment_required": ["barbell"],
+    "primary_muscles": ["lats", "mid_back", "rhomboids"],
+    "secondary_muscles": ["traps", "rear_delts", "biceps", "lower_back"],
+    "instructions": [
+      "Debout, buste penché à 45 degrés",
+      "Genoux légèrement fléchis",
+      "Saisissez la barre en pronation, largeur épaules",
+      "Tirez la barre vers le bas du ventre",
+      "Serrez les omoplates en haut",
+      "Redescendez contrôlé, bras tendus"
+    ],
+    "tips": [
+      "Excellent pour l'épaisseur du dos",
+      "Gardez le dos plat (JAMAIS arrondi)",
+      "Tirez avec les coudes, pas les mains",
+      "Buste à 45° pour rowing classique"
+    ],
+    "common_mistakes": [
+      "Arrondir le dos",
+      "Se redresser à chaque rep (tricher)",
+      "Tirer avec les bras au lieu du dos",
+      "Utiliser l'élan excessivement"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Dumbbell Shoulder Press",
+    "description": "Développé épaules aux haltères. Excellent pour développer les deltoïdes.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800",
+    "video_url": "https://www.youtube.com/watch?v=qEwKCR5JCog",
+    "animation_url": null,
+    "category": "shoulders",
+    "difficulty_level": "beginner",
+    "equipment_required": ["dumbbells", "bench"],
+    "primary_muscles": ["front_delts", "side_delts"],
+    "secondary_muscles": ["triceps", "upper_chest"],
+    "instructions": [
+      "Assis, dos contre le dossier",
+      "Haltères au niveau des épaules",
+      "Poussez vers le haut en contractant",
+      "Rapprochez légèrement les haltères en haut",
+      "Redescendez contrôlé aux épaules"
+    ],
+    "tips": [
+      "Permet amplitude supérieure à la barre",
+      "Corrige les déséquilibres",
+      "Gardez le dos contre le dossier",
+      "Mouvement fluide et contrôlé"
+    ],
+    "common_mistakes": [
+      "Cambrer le dos",
+      "Hausser les épaules",
+      "Descendre trop bas (risque épaules)",
+      "Pousser trop vite"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Romanian Deadlift",
+    "description": "Soulevé de terre roumain. Excellent pour ischio-jambiers et fessiers.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800",
+    "video_url": "https://www.youtube.com/watch?v=2SHsk9AzdjA",
+    "animation_url": null,
+    "category": "legs",
+    "difficulty_level": "intermediate",
+    "equipment_required": ["barbell"],
+    "primary_muscles": ["hamstrings", "glutes"],
+    "secondary_muscles": ["lower_back", "traps"],
+    "instructions": [
+      "Debout, barre devant les cuisses",
+      "Jambes quasi-tendues (légère flexion genoux)",
+      "Penchez-vous en poussant les hanches en arrière",
+      "Barre descend le long des jambes jusqu'aux tibias",
+      "Sentez l'étirement des ischios",
+      "Remontez en contractant fessiers et ischios"
+    ],
+    "tips": [
+      "Excellent pour ischio-jambiers",
+      "Dos TOUJOURS plat",
+      "Focus sur le hip hinge (flexion hanches)",
+      "Barre reste près du corps"
+    ],
+    "common_mistakes": [
+      "Plier trop les genoux (devient squat)",
+      "Arrondir le dos",
+      "Barre trop loin du corps",
+      "Ne pas pousser les hanches en arrière"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Barbell Curl",
+    "description": "Curl barre biceps. Le roi pour la masse des bras.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=800",
+    "video_url": "https://www.youtube.com/watch?v=kwG2ipFRgfo",
+    "animation_url": null,
+    "category": "arms",
+    "difficulty_level": "beginner",
+    "equipment_required": ["barbell"],
+    "primary_muscles": ["biceps"],
+    "secondary_muscles": ["forearms"],
+    "instructions": [
+      "Debout, pieds largeur hanches",
+      "Barre en supination (paumes vers le haut)",
+      "Coudes fixes le long du corps",
+      "Fléchissez les coudes pour monter la barre",
+      "Contractez les biceps en haut",
+      "Redescendez contrôlé jusqu'à extension complète"
+    ],
+    "tips": [
+      "ROI de la masse des biceps",
+      "Coudes FIXES (ne pas avancer)",
+      "Pas d'élan avec le dos",
+      "Amplitude complète obligatoire"
+    ],
+    "common_mistakes": [
+      "Balancer le corps pour tricher",
+      "Avancer les coudes",
+      "Demi-reps",
+      "Charge trop lourde"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Triceps Pushdown",
+    "description": "Extension triceps à la poulie. Excellent pour isolation des triceps.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800",
+    "video_url": "https://www.youtube.com/watch?v=2-LAMcpzODU",
+    "animation_url": null,
+    "category": "arms",
+    "difficulty_level": "beginner",
+    "equipment_required": ["cable_machine", "rope"],
+    "primary_muscles": ["triceps"],
+    "secondary_muscles": [],
+    "instructions": [
+      "Debout face à la poulie haute",
+      "Saisissez la corde ou barre",
+      "Coudes fixes le long du corps",
+      "Poussez vers le bas en étendant les coudes",
+      "Contractez les triceps en bas",
+      "Remontez contrôlé"
+    ],
+    "tips": [
+      "Excellent pour isolation triceps",
+      "Coudes TOUJOURS fixes",
+      "Tension continue",
+      "Variez les accessoires (corde, barre, V-bar)"
+    ],
+    "common_mistakes": [
+      "Bouger les coudes",
+      "Se pencher sur la barre",
+      "Utiliser l'élan",
+      "Remonter trop haut"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Leg Press",
+    "description": "Presse à cuisses. Excellent pour charger lourd en sécurité.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800",
+    "video_url": "https://www.youtube.com/watch?v=IZxyjW7MPJQ",
+    "animation_url": null,
+    "category": "legs",
+    "difficulty_level": "beginner",
+    "equipment_required": ["leg_press_machine"],
+    "primary_muscles": ["quads", "glutes"],
+    "secondary_muscles": ["hamstrings", "calves"],
+    "instructions": [
+      "Assis dans la machine, dos contre le dossier",
+      "Pieds largeur épaules sur la plateforme",
+      "Libérez les sécurités",
+      "Descendez contrôlé jusqu'à genoux près de la poitrine",
+      "Poussez dans les talons pour remonter"
+    ],
+    "tips": [
+      "Permet de charger très lourd",
+      "Moins de stress sur le dos que squat",
+      "Amplitude complète importante",
+      "Variez position des pieds pour cibler différentes zones"
+    ],
+    "common_mistakes": [
+      "Décoller le bas du dos",
+      "Amplitude partielle",
+      "Verrouiller complètement les genoux",
+      "Descendre trop vite"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Lat Pulldown",
+    "description": "Tirage vertical à la poulie. Excellent pour le développement du dos.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=800",
+    "video_url": "https://www.youtube.com/watch?v=CAwf7n6Luuc",
+    "animation_url": null,
+    "category": "back",
+    "difficulty_level": "beginner",
+    "equipment_required": ["cable_machine", "lat_bar"],
+    "primary_muscles": ["lats", "upper_back"],
+    "secondary_muscles": ["biceps", "forearms", "traps"],
+    "instructions": [
+      "Assis, genoux bloqués sous les pads",
+      "Saisissez la barre large en pronation",
+      "Tirez vers le haut de la poitrine",
+      "Serrez les omoplates en contractant",
+      "Remontez contrôlé sans relâcher complètement"
+    ],
+    "tips": [
+      "Excellent pour développer largeur du dos",
+      "Alternative aux tractions si trop difficiles",
+      "Focus sur tirer avec les coudes",
+      "Buste légèrement en arrière (10-15°)"
+    ],
+    "common_mistakes": [
+      "Se pencher excessivement en arrière",
+      "Tirer derrière la nuque (dangereux épaules)",
+      "Utiliser l'élan",
+      "Tirer avec les bras au lieu du dos"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Plank",
+    "description": "Gainage abdominal. Le roi du core stability.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800",
+    "video_url": "https://www.youtube.com/watch?v=ASdvN_XEl_c",
+    "animation_url": null,
+    "category": "core",
+    "difficulty_level": "beginner",
+    "equipment_required": ["bodyweight"],
+    "primary_muscles": ["abs", "core"],
+    "secondary_muscles": ["shoulders", "glutes"],
+    "instructions": [
+      "Position pompe sur les avant-bras",
+      "Coudes sous les épaules",
+      "Corps aligné de la tête aux pieds",
+      "Contractez abdos et fessiers",
+      "Maintenez la position sans bouger"
+    ],
+    "tips": [
+      "Le ROI du gainage",
+      "Corps parfaitement aligné",
+      "Respirez normalement",
+      "Commencez par 30 sec, progressez vers 60+ sec"
+    ],
+    "common_mistakes": [
+      "Cambrer le dos (hanches trop basses)",
+      "Hanches trop hautes",
+      "Retenir sa respiration",
+      "Regarder vers l'avant au lieu du sol"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Dumbbell Bench Press",
+    "description": "Développé couché aux haltères. Excellente amplitude et activation.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800",
+    "video_url": "https://www.youtube.com/watch?v=VmB1G1K7v94",
+    "animation_url": null,
+    "category": "chest",
+    "difficulty_level": "beginner",
+    "equipment_required": ["dumbbells", "bench"],
+    "primary_muscles": ["chest", "pectorals"],
+    "secondary_muscles": ["front_delts", "triceps"],
+    "instructions": [
+      "Allongé sur le banc, haltères au niveau de la poitrine",
+      "Pieds au sol",
+      "Poussez vers le haut en contractant les pectoraux",
+      "Rapprochez légèrement les haltères en haut",
+      "Descendez contrôlé jusqu'à sentir l'étirement"
+    ],
+    "tips": [
+      "Amplitude supérieure à la barre",
+      "Corrige les déséquilibres",
+      "Permet trajectoire naturelle",
+      "Plus sûr sans pareur"
+    ],
+    "common_mistakes": [
+      "Descendre trop bas (risque épaules)",
+      "Pousser trop vite",
+      "Décoller les fesses",
+      "Cambrer excessivement"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Leg Curl",
+    "description": "Curl ischio-jambiers à la machine. Isolation des ischios.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800",
+    "video_url": "https://www.youtube.com/watch?v=1Tq3QdYUuHs",
+    "animation_url": null,
+    "category": "legs",
+    "difficulty_level": "beginner",
+    "equipment_required": ["leg_curl_machine"],
+    "primary_muscles": ["hamstrings"],
+    "secondary_muscles": ["calves"],
+    "instructions": [
+      "Allongé ventre ou assis selon machine",
+      "Chevilles sous le pad",
+      "Fléchissez les genoux pour ramener le pad",
+      "Contractez les ischio-jambiers en haut",
+      "Redescendez contrôlé sans relâcher"
+    ],
+    "tips": [
+      "Excellent pour isolation ischios",
+      "Mouvement lent et contrôlé",
+      "Amplitude complète",
+      "Ne cambrez pas le dos"
+    ],
+    "common_mistakes": [
+      "Utiliser l'élan",
+      "Soulever les hanches",
+      "Amplitude partielle",
+      "Relâcher complètement en bas"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Incline Dumbbell Press",
+    "description": "Développé incliné haltères. Cible le haut des pectoraux.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800",
+    "video_url": "https://www.youtube.com/watch?v=8iPEnn-ltC8",
+    "animation_url": null,
+    "category": "chest",
+    "difficulty_level": "intermediate",
+    "equipment_required": ["dumbbells", "incline_bench"],
+    "primary_muscles": ["upper_chest", "pectorals"],
+    "secondary_muscles": ["front_delts", "triceps"],
+    "instructions": [
+      "Banc incliné à 30-45 degrés",
+      "Haltères au niveau du haut de la poitrine",
+      "Poussez vers le haut et légèrement vers l'intérieur",
+      "Contractez le haut des pectoraux",
+      "Redescendez contrôlé"
+    ],
+    "tips": [
+      "30-45° optimal pour haut des pecs",
+      "Plus de 45° = trop d'épaules",
+      "Excellent pour équilibrer développement pectoraux",
+      "Amplitude complète importante"
+    ],
+    "common_mistakes": [
+      "Inclinaison trop forte (>45°)",
+      "Cambrer le dos",
+      "Amplitude partielle",
+      "Pousser trop vite"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Face Pulls",
+    "description": "Tirage visage à la poulie. Excellent pour deltoïdes postérieurs et santé épaules.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800",
+    "video_url": "https://www.youtube.com/watch?v=rep-qVOkqgk",
+    "animation_url": null,
+    "category": "shoulders",
+    "difficulty_level": "beginner",
+    "equipment_required": ["cable_machine", "rope"],
+    "primary_muscles": ["rear_delts"],
+    "secondary_muscles": ["traps", "rhomboids"],
+    "instructions": [
+      "Poulie haute avec corde",
+      "Saisissez les extrémités de la corde",
+      "Tirez vers le visage en écartant la corde",
+      "Coudes hauts et vers l'extérieur",
+      "Serrez les omoplates en contractant"
+    ],
+    "tips": [
+      "Excellent pour santé des épaules",
+      "Essentiel si vous pressez beaucoup",
+      "Coudes HAUTS (niveau épaules)",
+      "Focus sur arrière des épaules"
+    ],
+    "common_mistakes": [
+      "Coudes trop bas",
+      "Ne pas écarter la corde",
+      "Utiliser trop de poids",
+      "Tirer vers la poitrine au lieu du visage"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Bulgarian Split Squat",
+    "description": "Squat bulgare unilatéral. Excellent pour quads, fessiers et équilibre.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800",
+    "video_url": "https://www.youtube.com/watch?v=2C-uNgKwPLE",
+    "animation_url": null,
+    "category": "legs",
+    "difficulty_level": "intermediate",
+    "equipment_required": ["dumbbells", "bench"],
+    "primary_muscles": ["quads", "glutes"],
+    "secondary_muscles": ["hamstrings", "calves", "core"],
+    "instructions": [
+      "Pied arrière sur banc, pied avant à distance de fente",
+      "Haltères dans chaque main",
+      "Descendez en fléchissant le genou avant",
+      "Poussez dans le talon avant pour remonter"
+    ],
+    "tips": [
+      "Excellent pour équilibre et fessiers",
+      "Genou avant aligné avec le pied",
+      "Buste relativement droit",
+      "Corrige les déséquilibres"
+    ],
+    "common_mistakes": [
+      "Genou qui rentre vers l'intérieur",
+      "Se pencher trop en avant",
+      "Pied avant trop près/loin du banc",
+      "Basculer sur le côté"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Hammer Curl",
+    "description": "Curl marteau. Cible les biceps et les brachials avec prise neutre.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1541534741688-6078c6bfb5c5?w=800",
+    "video_url": "https://www.youtube.com/watch?v=TwD-YGVP4Bk",
+    "animation_url": null,
+    "category": "arms",
+    "difficulty_level": "beginner",
+    "equipment_required": ["dumbbells"],
+    "primary_muscles": ["biceps", "brachialis"],
+    "secondary_muscles": ["forearms"],
+    "instructions": [
+      "Debout, haltères en prise neutre (paumes face à face)",
+      "Coudes fixes le long du corps",
+      "Fléchissez les coudes en montant les haltères",
+      "Contractez en haut",
+      "Redescendez contrôlé"
+    ],
+    "tips": [
+      "Excellent pour épaisseur des bras",
+      "Cible le brachial (sous le biceps)",
+      "Moins de stress sur les poignets",
+      "Peut être fait alternativement"
+    ],
+    "common_mistakes": [
+      "Balancer le corps",
+      "Bouger les coudes",
+      "Rotation du poignet",
+      "Demi-reps"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Calf Raises",
+    "description": "Élévations mollets. Le roi pour développer les mollets.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800",
+    "video_url": "https://www.youtube.com/watch?v=JbyjNymZdhw",
+    "animation_url": null,
+    "category": "legs",
+    "difficulty_level": "beginner",
+    "equipment_required": ["calf_machine", "dumbbells"],
+    "primary_muscles": ["calves", "gastrocnemius"],
+    "secondary_muscles": [],
+    "instructions": [
+      "Debout dans la machine, épaules sous les pads",
+      "Pointes de pieds sur la plateforme",
+      "Montez sur la pointe des pieds",
+      "Contractez les mollets en haut",
+      "Descendez jusqu'à étirement complet"
+    ],
+    "tips": [
+      "Amplitude COMPLÈTE obligatoire",
+      "Pause en haut et en bas",
+      "Reps élevées efficaces (15-25)",
+      "Variez pieds parallèles/ouverts/fermés"
+    ],
+    "common_mistakes": [
+      "Amplitude partielle",
+      "Aller trop vite",
+      "Ne pas contracter en haut",
+      "Plier les genoux"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Cable Flyes",
+    "description": "Écartés à la poulie. Tension continue sur les pectoraux.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1599058917212-d750089bc07e?w=800",
+    "video_url": "https://www.youtube.com/watch?v=Iwe6AmxVf7o",
+    "animation_url": null,
+    "category": "chest",
+    "difficulty_level": "intermediate",
+    "equipment_required": ["cable_machine"],
+    "primary_muscles": ["chest", "pectorals"],
+    "secondary_muscles": ["front_delts"],
+    "instructions": [
+      "Poulies hautes, poignée dans chaque main",
+      "Penchez légèrement le buste en avant",
+      "Ramenez les mains devant la poitrine en arc",
+      "Croisez légèrement en contractant",
+      "Revenez contrôlé"
+    ],
+    "tips": [
+      "Tension continue excellente",
+      "Variez hauteur poulies (haut/milieu/bas)",
+      "Croisez légèrement pour contraction maximale",
+      "Mouvement lent et contrôlé"
+    ],
+    "common_mistakes": [
+      "Utiliser l'élan",
+      "Se pencher excessivement",
+      "Charges trop lourdes",
+      "Ne pas croiser assez"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Seated Cable Row",
+    "description": "Rowing poulie assis. Excellent pour épaisseur du dos avec tension continue.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?w=800",
+    "video_url": "https://www.youtube.com/watch?v=UCXxvVItLoM",
+    "animation_url": null,
+    "category": "back",
+    "difficulty_level": "beginner",
+    "equipment_required": ["cable_machine"],
+    "primary_muscles": ["lats", "mid_back", "rhomboids"],
+    "secondary_muscles": ["traps", "rear_delts", "biceps"],
+    "instructions": [
+      "Assis, pieds sur plateforme, genoux légèrement fléchis",
+      "Saisissez la poignée, bras tendus",
+      "Tirez vers le bas du ventre",
+      "Serrez les omoplates en contractant",
+      "Revenez contrôlé sans relâcher"
+    ],
+    "tips": [
+      "Tension continue excellente",
+      "Variez poignées (V-bar, large, corde)",
+      "Buste légèrement penché en arrière (10-15°)",
+      "Focus sur serrer omoplates"
+    ],
+    "common_mistakes": [
+      "Se pencher excessivement en arrière",
+      "Utiliser l'élan en se balançant",
+      "Tirer avec les bras",
+      "Arrondir le dos"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Lateral Raises",
+    "description": "Élévations latérales. Le roi pour développer les deltoïdes latéraux.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800",
+    "video_url": "https://www.youtube.com/watch?v=3VcKaXpzqRo",
+    "animation_url": null,
+    "category": "shoulders",
+    "difficulty_level": "beginner",
+    "equipment_required": ["dumbbells"],
+    "primary_muscles": ["side_delts"],
+    "secondary_muscles": ["front_delts", "traps"],
+    "instructions": [
+      "Debout, haltères le long du corps",
+      "Coudes légèrement fléchis",
+      "Élevez les bras sur les côtés jusqu'à l'horizontale",
+      "Pause en haut",
+      "Redescendez contrôlé"
+    ],
+    "tips": [
+      "Le ROI des épaules larges",
+      "Charges modérées, exécution parfaite",
+      "Montez jusqu'à l'horizontal (pas plus)",
+      "Versez légèrement l'eau (rotation interne)"
+    ],
+    "common_mistakes": [
+      "Monter trop haut",
+      "Utiliser l'élan",
+      "Hausser les épaules",
+      "Charges trop lourdes"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Hip Thrust",
+    "description": "Poussée de hanches. Le meilleur exercice pour les fessiers.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800",
+    "video_url": "https://www.youtube.com/watch?v=SEdqd1n0cvg",
+    "animation_url": null,
+    "category": "legs",
+    "difficulty_level": "intermediate",
+    "equipment_required": ["barbell", "bench", "barbell_pad"],
+    "primary_muscles": ["glutes"],
+    "secondary_muscles": ["hamstrings", "core"],
+    "instructions": [
+      "Dos contre le banc, barre sur les hanches (pad recommandé)",
+      "Pieds à plat, genoux à 90° en haut",
+      "Poussez les hanches vers le plafond",
+      "Serrez FORT les fessiers en haut (hold 2 sec)",
+      "Redescendez contrôlé"
+    ],
+    "tips": [
+      "MEILLEUR exercice fessiers (prouvé scientifiquement)",
+      "Permet charges TRÈS lourdes",
+      "Utilisez toujours un pad",
+      "Contractez fort et maintenez"
+    ],
+    "common_mistakes": [
+      "Ne pas monter assez haut",
+      "Hyperextension du dos",
+      "Ne pas contracter en haut",
+      "Oublier le pad (douloureux)"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Dips",
+    "description": "Dips aux barres parallèles. Excellent pour pectoraux et triceps.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800",
+    "video_url": "https://www.youtube.com/watch?v=2z8JmcrW-As",
+    "animation_url": null,
+    "category": "chest",
+    "difficulty_level": "intermediate",
+    "equipment_required": ["dip_bars", "bodyweight"],
+    "primary_muscles": ["chest", "triceps"],
+    "secondary_muscles": ["front_delts"],
+    "instructions": [
+      "Barres parallèles, bras tendus",
+      "Penchez le buste en avant (pour pectoraux)",
+      "Descendez contrôlé jusqu'à 90° coudes",
+      "Poussez pour remonter",
+      "Verrouillez en haut"
+    ],
+    "tips": [
+      "Penché en avant = pectoraux, droit = triceps",
+      "Amplitude complète importante",
+      "Si trop facile: ajoutez du poids (ceinture lestée)",
+      "Si trop dur: utilisez machine assistée"
+    ],
+    "common_mistakes": [
+      "Amplitude partielle",
+      "Se balancer",
+      "Hausser les épaules",
+      "Descendre trop bas (risque épaules)"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Lunges",
+    "description": "Fentes avant. Excellent pour quads, fessiers et équilibre.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1574680096145-d05b474e2155?w=800",
+    "video_url": "https://www.youtube.com/watch?v=QOVaHwm-Q6U",
+    "animation_url": null,
+    "category": "legs",
+    "difficulty_level": "beginner",
+    "equipment_required": ["dumbbells", "bodyweight"],
+    "primary_muscles": ["quads", "glutes"],
+    "secondary_muscles": ["hamstrings", "calves", "core"],
+    "instructions": [
+      "Debout, haltères dans chaque main (ou poids de corps)",
+      "Pas en avant avec une jambe",
+      "Descendez jusqu'à genou arrière près du sol",
+      "Genou avant à 90°, aligné avec le pied",
+      "Poussez dans le talon avant pour remonter"
+    ],
+    "tips": [
+      "Excellent pour équilibre et coordination",
+      "Corrige déséquilibres gauche/droite",
+      "Variez: fentes avant, arrière, marchées",
+      "Buste droit tout le mouvement"
+    ],
+    "common_mistakes": [
+      "Genou avant qui dépasse trop les orteils",
+      "Se pencher en avant",
+      "Pas trop court",
+      "Genou qui rentre vers l'intérieur"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Russian Twist",
+    "description": "Torsion russe. Excellent pour les obliques et rotation du tronc.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800",
+    "video_url": "https://www.youtube.com/watch?v=wkD8rjkodUI",
+    "animation_url": null,
+    "category": "core",
+    "difficulty_level": "beginner",
+    "equipment_required": ["medicine_ball", "bodyweight"],
+    "primary_muscles": ["obliques", "abs"],
+    "secondary_muscles": ["core"],
+    "instructions": [
+      "Assis, genoux fléchis, pieds levés ou au sol",
+      "Buste légèrement en arrière (45°)",
+      "Tenez haltère ou médecine ball",
+      "Pivotez le torse d'un côté à l'autre",
+      "Touchez le sol de chaque côté"
+    ],
+    "tips": [
+      "Excellent pour obliques",
+      "Mouvement contrôlé, pas brusque",
+      "Gardez le buste stable (pas de balancement)",
+      "Respirez normalement"
+    ],
+    "common_mistakes": [
+      "Bouger seulement les bras",
+      "Aller trop vite",
+      "Pieds qui bougent",
+      "Ne pas vraiment pivoter le torse"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Mountain Climbers",
+    "description": "Grimpeurs. Excellent cardio et core en même temps.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800",
+    "video_url": "https://www.youtube.com/watch?v=nmwgirgXLYM",
+    "animation_url": null,
+    "category": "core",
+    "difficulty_level": "intermediate",
+    "equipment_required": ["bodyweight"],
+    "primary_muscles": ["core", "abs"],
+    "secondary_muscles": ["shoulders", "hip_flexors", "quads"],
+    "instructions": [
+      "Position planche haute (bras tendus)",
+      "Ramenez un genou vers la poitrine",
+      "Alternez rapidement les jambes",
+      "Gardez les hanches basses",
+      "Mouvement de course en planche"
+    ],
+    "tips": [
+      "Excellent cardio + core",
+      "Hanches stables et basses",
+      "Rythme soutenu",
+      "Gainez le core fort"
+    ],
+    "common_mistakes": [
+      "Hanches trop hautes",
+      "Dos qui bouge",
+      "Aller trop vite = mauvaise forme",
+      "Épaules qui avancent"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Burpees",
+    "description": "Burpees. Le roi du cardio full body.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800",
+    "video_url": "https://www.youtube.com/watch?v=TU8QYVW0gDU",
+    "animation_url": null,
+    "category": "core",
+    "difficulty_level": "advanced",
+    "equipment_required": ["bodyweight"],
+    "primary_muscles": ["full_body"],
+    "secondary_muscles": ["chest", "legs", "shoulders", "core"],
+    "instructions": [
+      "Debout, descendez en squat",
+      "Posez les mains au sol",
+      "Sautez les jambes en arrière (position planche)",
+      "Faites une pompe",
+      "Ramenez les jambes vers les mains",
+      "Sautez verticalement avec les bras en l'air"
+    ],
+    "tips": [
+      "Le ROI du cardio total body",
+      "Brûle énormément de calories",
+      "Peut être modifié (sans saut, sans pompe)",
+      "Excellent pour HIIT"
+    ],
+    "common_mistakes": [
+      "Sauter la pompe",
+      "Cambrer en position planche",
+      "Aller trop vite = mauvaise forme",
+      "Ne pas sauter assez haut"
+    ],
+    "is_premium": false
+  },
+  {
+    "name": "Push-Ups",
+    "description": "Pompes. Le roi des exercices pectoraux au poids du corps.",
+    "thumbnail_url": "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800",
+    "video_url": "https://www.youtube.com/watch?v=IODxDxX7oi4",
+    "animation_url": null,
+    "category": "chest",
+    "difficulty_level": "beginner",
+    "equipment_required": ["bodyweight"],
+    "primary_muscles": ["chest", "pectorals"],
+    "secondary_muscles": ["triceps", "front_delts", "core"],
+    "instructions": [
+      "Position planche, mains largeur épaules",
+      "Corps aligné de la tête aux pieds",
+      "Descendez en fléchissant les coudes",
+      "Poitrine près du sol",
+      "Poussez pour remonter"
+    ],
+    "tips": [
+      "Corps TOUJOURS aligné",
+      "Coudes à 45° du corps (pas écar tés)",
+      "Amplitude complète obligatoire",
+      "Variantes: inclinées, déclinées, diamant"
+    ],
+    "common_mistakes": [
+      "Cambrer le dos",
+      "Hanches qui tombent",
+      "Demi-reps",
+      "Coudes trop écartés"
+    ],
+    "is_premium": false
+  }
+]

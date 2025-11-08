@@ -1,0 +1,764 @@
+/**
+ * AI Workout Generator Screen - Multi-step wizard
+ *
+ * Features:
+ * - 5-step form wizard (Goal, Duration, Equipment, Intensity, Review)
+ * - Premium UI with progress indicator
+ * - Haptic feedback on navigation
+ * - Form validation
+ * - Loading state with animations
+ * - Navigation to result screen
+ *
+ * PREMIUM GATING:
+ * - Free users: 3 generations per day
+ * - Premium users: Unlimited generations
+ */
+
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Platform,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { useStyledTheme } from '@theme/ThemeProvider';
+import { Button } from '@components/ui';
+import { generateWorkoutWithRetry, type WorkoutGenerationPreferences } from '@services/ai/openai';
+import type { EquipmentType } from '@/types/workout';
+import { useRevenueCat } from '@/hooks/useRevenueCat';
+import { PremiumBadge } from '@/components/premium';
+import { getDailyCount, incrementDailyCount } from '@/services/storage';
+
+// Equipment options
+const EQUIPMENT_OPTIONS: Array<{ value: EquipmentType; label: string; icon: any }> = [
+  { value: 'none', label: 'Bodyweight Only', icon: 'body-outline' },
+  { value: 'dumbbells', label: 'Dumbbells', icon: 'barbell-outline' },
+  { value: 'barbell', label: 'Barbell', icon: 'fitness-outline' },
+  { value: 'kettlebell', label: 'Kettlebell', icon: 'fitness-outline' },
+  { value: 'resistance_bands', label: 'Resistance Bands', icon: 'git-branch-outline' },
+  { value: 'pull_up_bar', label: 'Pull-up Bar', icon: 'remove-outline' },
+  { value: 'bench', label: 'Bench', icon: 'square-outline' },
+  { value: 'yoga_mat', label: 'Yoga Mat', icon: 'apps-outline' },
+];
+
+// Goal options
+const GOAL_OPTIONS: Array<{
+  value: WorkoutGenerationPreferences['goal'];
+  label: string;
+  description: string;
+  icon: any;
+  color: string;
+}> = [
+  {
+    value: 'lose_weight',
+    label: 'Lose Weight',
+    description: 'Burn calories & shed fat',
+    icon: 'flame-outline',
+    color: '#F59E0B',
+  },
+  {
+    value: 'build_muscle',
+    label: 'Build Muscle',
+    description: 'Hypertrophy & size gains',
+    icon: 'fitness-outline',
+    color: '#8B5CF6',
+  },
+  {
+    value: 'increase_strength',
+    label: 'Get Stronger',
+    description: 'Max strength & power',
+    icon: 'barbell-outline',
+    color: '#EF4444',
+  },
+  {
+    value: 'improve_endurance',
+    label: 'Build Endurance',
+    description: 'Cardiovascular fitness',
+    icon: 'heart-outline',
+    color: '#10B981',
+  },
+  {
+    value: 'flexibility',
+    label: 'Flexibility',
+    description: 'Mobility & range of motion',
+    icon: 'hand-left-outline',
+    color: '#3B82F6',
+  },
+  {
+    value: 'athletic_performance',
+    label: 'Athletic Performance',
+    description: 'Sport-specific training',
+    icon: 'medal-outline',
+    color: '#F59E0B',
+  },
+];
+
+// Duration options (minutes)
+const DURATION_OPTIONS = [15, 20, 30, 45, 60, 75, 90];
+
+// Intensity options
+const INTENSITY_OPTIONS: Array<{
+  value: 'low' | 'moderate' | 'high' | 'extreme';
+  label: string;
+  description: string;
+}> = [
+  { value: 'low', label: 'Light', description: 'Easy pace, recovery' },
+  { value: 'moderate', label: 'Moderate', description: 'Challenging but sustainable' },
+  { value: 'high', label: 'Hard', description: 'Near maximum effort' },
+  { value: 'extreme', label: 'Extreme', description: 'All-out intensity' },
+];
+
+// INNOVATION: Daily generation limit for free users
+const FREE_DAILY_LIMIT = 3;
+
+export default function AIGeneratorScreen() {
+  const theme = useStyledTheme();
+  const router = useRouter();
+  const { isPremium, trackPremiumGateHit } = useRevenueCat();
+
+  // Form state
+  const [step, setStep] = useState(0);
+  const [generating, setGenerating] = useState(false);
+
+  // INNOVATION: Track daily generations (free users only)
+  const [generationsToday, setGenerationsToday] = useState(0);
+
+  // Preferences
+  const [goal, setGoal] = useState<WorkoutGenerationPreferences['goal']>('build_muscle');
+  const [duration, setDuration] = useState(30);
+  const [equipment, setEquipment] = useState<string[]>(['none']);
+  const [intensity, setIntensity] = useState<'low' | 'moderate' | 'high' | 'extreme'>('moderate');
+
+  // INNOVATION: Load generation count from storage on mount
+  useEffect(() => {
+    loadGenerationCount();
+  }, []);
+
+  async function loadGenerationCount() {
+    const count = await getDailyCount('AI_GENERATIONS');
+    setGenerationsToday(count);
+  }
+
+  async function saveIncrementGenerationCount() {
+    const newCount = await incrementDailyCount('AI_GENERATIONS');
+    setGenerationsToday(newCount);
+  }
+
+  // Colors
+  const bgColors = {
+    primary: theme.isDark ? theme.colors.dark.bg : theme.colors.light.bg,
+    surface: theme.isDark ? theme.colors.dark.surface : theme.colors.light.surface,
+    card: theme.isDark ? theme.colors.dark.card : theme.colors.light.card,
+  };
+
+  const textColors = {
+    primary: theme.isDark ? theme.colors.dark.text.primary : theme.colors.light.text.primary,
+    secondary: theme.isDark
+      ? theme.colors.dark.text.secondary
+      : theme.colors.light.text.secondary,
+    tertiary: theme.isDark ? theme.colors.dark.text.tertiary : theme.colors.light.text.tertiary,
+  };
+
+  const totalSteps = 4; // Goal, Duration, Equipment, Intensity
+
+  const handleNext = () => {
+    if (Platform.OS === 'ios') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+
+    if (step < totalSteps - 1) {
+      setStep(step + 1);
+    } else {
+      // Generate workout
+      handleGenerate();
+    }
+  };
+
+  const handleBack = () => {
+    if (Platform.OS === 'ios') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+
+    if (step > 0) {
+      setStep(step - 1);
+    } else {
+      router.back();
+    }
+  };
+
+  const handleGenerate = async () => {
+    // PREMIUM GATE DISABLED - Free AI generations for everyone!
+    // if (!isPremium && generationsToday >= FREE_DAILY_LIMIT) {
+    //   trackPremiumGateHit('ai_generation');
+
+    //   Alert.alert(
+    //     'Daily Limit Reached 🌟',
+    //     `Free users can generate ${FREE_DAILY_LIMIT} workouts per day. Upgrade to Premium for unlimited AI generations!`,
+    //     [
+    //       { text: 'Not Now', style: 'cancel' },
+    //       {
+    //         text: 'Upgrade to Premium',
+    //         onPress: () => router.push('/paywall' as any),
+    //       },
+    //     ]
+    //   );
+    //   return;
+    // }
+
+    setGenerating(true);
+
+    if (Platform.OS === 'ios') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+
+    try {
+      const preferences: WorkoutGenerationPreferences = {
+        goal,
+        fitness_level: 'intermediate', // TODO: Get from user profile
+        duration_minutes: duration,
+        equipment: equipment as EquipmentType[],
+        location: equipment.includes('none') ? 'home' : 'gym',
+        intensity,
+        include_warmup: true,
+        include_cooldown: true,
+      };
+
+      const result = await generateWorkoutWithRetry(preferences);
+
+      // PREMIUM GATE DISABLED - No daily limits
+      // if (!isPremium) {
+      //   await saveIncrementGenerationCount();
+      // }
+
+      // Navigate to result screen with generated workout
+      router.push({
+        pathname: '/ai-generator/result',
+        params: {
+          workout: JSON.stringify(result),
+        },
+      } as any);
+    } catch (error) {
+      console.error('Error generating workout:', error);
+
+      if (Platform.OS === 'ios') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+
+      Alert.alert(
+        'Generation Failed',
+        error instanceof Error ? error.message : 'Failed to generate workout. Please try again.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const toggleEquipment = (value: string) => {
+    if (Platform.OS === 'ios') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+
+    if (equipment.includes(value)) {
+      // Remove if already selected
+      const filtered = equipment.filter((e) => e !== value);
+      setEquipment(filtered.length > 0 ? filtered : ['none']);
+    } else {
+      // Add to selection
+      const updated = equipment.includes('none')
+        ? [value]
+        : [...equipment, value];
+      setEquipment(updated);
+    }
+  };
+
+  // Render step content
+  const renderStepContent = () => {
+    switch (step) {
+      case 0:
+        // Step 1: Goal
+        return (
+          <View style={styles.stepContent}>
+            <Text style={[styles.stepTitle, { color: textColors.primary }]}>
+              What's your goal?
+            </Text>
+            <Text style={[styles.stepSubtitle, { color: textColors.secondary }]}>
+              Choose your primary fitness objective
+            </Text>
+
+            <View style={styles.optionsGrid}>
+              {GOAL_OPTIONS.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => {
+                    if (Platform.OS === 'ios') {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }
+                    setGoal(option.value);
+                  }}
+                  style={[
+                    styles.goalCard,
+                    {
+                      backgroundColor: goal === option.value
+                        ? option.color + '20'
+                        : bgColors.card,
+                      borderColor: goal === option.value
+                        ? option.color
+                        : theme.isDark ? theme.colors.dark.border : theme.colors.light.border,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name={option.icon}
+                    size={32}
+                    color={goal === option.value ? option.color : textColors.tertiary}
+                  />
+                  <Text
+                    style={[
+                      styles.goalLabel,
+                      {
+                        color: goal === option.value ? option.color : textColors.primary,
+                      },
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                  <Text style={[styles.goalDescription, { color: textColors.tertiary }]}>
+                    {option.description}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        );
+
+      case 1:
+        // Step 2: Duration
+        return (
+          <View style={styles.stepContent}>
+            <Text style={[styles.stepTitle, { color: textColors.primary }]}>
+              How long?
+            </Text>
+            <Text style={[styles.stepSubtitle, { color: textColors.secondary }]}>
+              Select workout duration
+            </Text>
+
+            <View style={styles.durationContainer}>
+              {DURATION_OPTIONS.map((mins) => (
+                <TouchableOpacity
+                  key={mins}
+                  onPress={() => {
+                    if (Platform.OS === 'ios') {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }
+                    setDuration(mins);
+                  }}
+                  style={[
+                    styles.durationChip,
+                    {
+                      backgroundColor: duration === mins
+                        ? theme.colors.primary[500]
+                        : bgColors.card,
+                      borderColor: duration === mins
+                        ? theme.colors.primary[500]
+                        : theme.isDark ? theme.colors.dark.border : theme.colors.light.border,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.durationText,
+                      {
+                        color: duration === mins ? '#FFFFFF' : textColors.primary,
+                      },
+                    ]}
+                  >
+                    {mins} min
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        );
+
+      case 2:
+        // Step 3: Equipment
+        return (
+          <View style={styles.stepContent}>
+            <Text style={[styles.stepTitle, { color: textColors.primary }]}>
+              Available equipment?
+            </Text>
+            <Text style={[styles.stepSubtitle, { color: textColors.secondary }]}>
+              Select all that apply
+            </Text>
+
+            <View style={styles.equipmentGrid}>
+              {EQUIPMENT_OPTIONS.map((option) => {
+                const isSelected = equipment.includes(option.value);
+
+                return (
+                  <TouchableOpacity
+                    key={option.value}
+                    onPress={() => toggleEquipment(option.value)}
+                    style={[
+                      styles.equipmentCard,
+                      {
+                        backgroundColor: isSelected
+                          ? theme.colors.primary[500] + '20'
+                          : bgColors.card,
+                        borderColor: isSelected
+                          ? theme.colors.primary[500]
+                          : theme.isDark ? theme.colors.dark.border : theme.colors.light.border,
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name={option.icon}
+                      size={28}
+                      color={isSelected ? theme.colors.primary[500] : textColors.tertiary}
+                    />
+                    <Text
+                      style={[
+                        styles.equipmentLabel,
+                        {
+                          color: isSelected ? theme.colors.primary[500] : textColors.primary,
+                        },
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        );
+
+      case 3:
+        // Step 4: Intensity
+        return (
+          <View style={styles.stepContent}>
+            <Text style={[styles.stepTitle, { color: textColors.primary }]}>
+              Intensity level?
+            </Text>
+            <Text style={[styles.stepSubtitle, { color: textColors.secondary }]}>
+              How hard do you want to push?
+            </Text>
+
+            <View style={styles.intensityList}>
+              {INTENSITY_OPTIONS.map((option) => (
+                <TouchableOpacity
+                  key={option.value}
+                  onPress={() => {
+                    if (Platform.OS === 'ios') {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }
+                    setIntensity(option.value);
+                  }}
+                  style={[
+                    styles.intensityCard,
+                    {
+                      backgroundColor: intensity === option.value
+                        ? theme.colors.primary[500] + '20'
+                        : bgColors.card,
+                      borderColor: intensity === option.value
+                        ? theme.colors.primary[500]
+                        : theme.isDark ? theme.colors.dark.border : theme.colors.light.border,
+                    },
+                  ]}
+                >
+                  <View style={styles.intensityContent}>
+                    <Text
+                      style={[
+                        styles.intensityLabel,
+                        {
+                          color: intensity === option.value
+                            ? theme.colors.primary[500]
+                            : textColors.primary,
+                        },
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                    <Text style={[styles.intensityDescription, { color: textColors.tertiary }]}>
+                      {option.description}
+                    </Text>
+                  </View>
+                  {intensity === option.value && (
+                    <Ionicons name="checkmark-circle" size={24} color={theme.colors.primary[500]} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  if (generating) {
+    return (
+      <View style={[styles.container, { backgroundColor: bgColors.primary }]}>
+        <LinearGradient
+          colors={['rgba(139, 92, 246, 0.1)', 'rgba(59, 130, 246, 0.1)', 'transparent']}
+          style={styles.loadingGradient}
+        >
+          <View style={styles.loadingContent}>
+            <ActivityIndicator size="large" color={theme.colors.primary[500]} />
+            <Text style={[styles.loadingTitle, { color: textColors.primary }]}>
+              Generating Your Workout...
+            </Text>
+            <Text style={[styles.loadingSubtitle, { color: textColors.secondary }]}>
+              Our AI is analyzing 3,500+ studies to create the perfect workout for you
+            </Text>
+          </View>
+        </LinearGradient>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.container, { backgroundColor: bgColors.primary }]}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={textColors.primary} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: textColors.primary }]}>AI Generator</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
+      {/* Progress bar */}
+      <View style={styles.progressContainer}>
+        <View style={[styles.progressTrack, { backgroundColor: bgColors.surface }]}>
+          <View
+            style={[
+              styles.progressFill,
+              {
+                backgroundColor: theme.colors.primary[500],
+                width: `${((step + 1) / totalSteps) * 100}%`,
+              },
+            ]}
+          />
+        </View>
+        <Text style={[styles.progressText, { color: textColors.tertiary }]}>
+          Step {step + 1} of {totalSteps}
+        </Text>
+      </View>
+
+      {/* Content */}
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {renderStepContent()}
+      </ScrollView>
+
+      {/* Footer buttons */}
+      <View style={[styles.footer, { backgroundColor: bgColors.primary }]}>
+        <Button
+          variant="secondary"
+          size="lg"
+          onPress={handleBack}
+          style={{ flex: 1 }}
+        >
+          {step === 0 ? 'Cancel' : 'Back'}
+        </Button>
+        <Button
+          variant="primary"
+          size="lg"
+          onPress={handleNext}
+          style={{ flex: 1 }}
+        >
+          {step === totalSteps - 1 ? 'Generate' : 'Next'}
+        </Button>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    paddingTop: 60,
+    paddingBottom: 16,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  progressContainer: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+  },
+  progressTrack: {
+    height: 4,
+    borderRadius: 2,
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  progressText: {
+    fontSize: 13,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+  },
+  stepContent: {
+    gap: 24,
+  },
+  stepTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  stepSubtitle: {
+    fontSize: 16,
+    lineHeight: 24,
+  },
+
+  // Goal options
+  optionsGrid: {
+    gap: 12,
+  },
+  goalCard: {
+    padding: 20,
+    borderRadius: 16,
+    borderWidth: 2,
+    alignItems: 'center',
+    gap: 8,
+  },
+  goalLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  goalDescription: {
+    fontSize: 13,
+    textAlign: 'center',
+  },
+
+  // Duration options
+  durationContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  durationChip: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 2,
+  },
+  durationText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  // Equipment options
+  equipmentGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  equipmentCard: {
+    width: '48%',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 2,
+    alignItems: 'center',
+    gap: 8,
+  },
+  equipmentLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+
+  // Intensity options
+  intensityList: {
+    gap: 12,
+  },
+  intensityCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 2,
+  },
+  intensityContent: {
+    flex: 1,
+  },
+  intensityLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  intensityDescription: {
+    fontSize: 14,
+  },
+
+  // Footer
+  footer: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    paddingBottom: 32,
+  },
+
+  // Loading state
+  loadingGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingContent: {
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  loadingTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    marginTop: 24,
+    marginBottom: 8,
+  },
+  loadingSubtitle: {
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+});

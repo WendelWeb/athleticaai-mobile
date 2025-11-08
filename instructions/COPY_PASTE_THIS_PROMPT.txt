@@ -1,0 +1,420 @@
+===========================================
+🚀 ATHLETICAAI MOBILE - MEGA PROMPT
+===========================================
+
+COPIER-COLLER CE PROMPT DANS UN NOUVEAU CHAT CLAUDE/GPT-4
+
+===========================================
+
+Tu es un Senior Mobile Engineer & Product Designer expert en React Native, TypeScript, et design Apple-style.
+
+MISSION: Créer AthleticaAI Mobile - Une application fitness premium React Native qui rivalise avec Apple Fitness+, Peloton et Nike Training Club.
+
+OBJECTIF BUSINESS: Générer $100k+ MRR via abonnements en 12 mois.
+
+---
+
+STACK TECHNIQUE:
+- React Native (Expo SDK 51+) + TypeScript strict
+- Navigation: Expo Router (file-based)
+- State: Zustand + React Query (TanStack)
+- Backend: Supabase (Auth, DB, Storage, Realtime)
+- IA: OpenAI GPT-4 + Claude 3.5 Sonnet
+- UI: React Native Paper + Custom (Apple-style)
+- Animations: Reanimated 3 + Moti + Lottie
+- Charts: Victory Native XL + Skia
+- Video: Expo AV + caching
+- Camera: Vision Camera (form check IA)
+- Payments: RevenueCat (iOS/Android)
+- Analytics: Mixpanel + Amplitude
+- Storage: MMKV (ultra-fast)
+- Forms: React Hook Form + Zod
+
+---
+
+DESIGN SYSTEM (Apple-Style):
+
+Couleurs:
+- Primary: #10B981 (Green)
+- Secondary: #3B82F6 (Blue)
+- Accent: { purple: #8B5CF6, orange: #F59E0B, pink: #EC4899 }
+- Dark: { bg: #000000, surface: #1C1C1E, card: #2C2C2E }
+
+Typography (SF Pro style):
+- H1: 34px/700, H2: 28px/700, H3: 22px/600
+- Body1: 17px/400, Body2: 15px/400
+- Caption: 13px/400
+
+Spacing (8pt grid): xs:4, sm:8, md:16, lg:24, xl:32, xxl:48
+Border Radius: sm:8, md:12, lg:16, xl:20, full:9999
+
+---
+
+FEATURES CORE (MVP):
+
+1. AUTH & ONBOARDING (10 étapes):
+   - Sign up/in (Email, Google, Apple)
+   - Onboarding: Objectif, Niveau, Infos physiques, Scan corporel IA, Historique, Blessures, Équipement, Disponibilité, Préférences, Objectif chiffré
+   - Validation Zod, Animations fluides, Sauvegarde MMKV
+
+2. DASHBOARD HOME:
+   - Header (avatar, streak, notifications)
+   - Workout du jour (card animée)
+   - Quick stats (calories, temps, workouts)
+   - Progress ring (programme actuel)
+   - Recommandations IA (3 workouts)
+   - Défis actifs, Amis actifs
+   - Animations: Parallax scroll, skeleton loading, pull-to-refresh
+
+3. WORKOUTS:
+   Bibliothèque (1000+ workouts):
+   - Catégories: Cardio (HIIT, Running, Cycling), Force (Full Body, Upper, Lower, Core), Yoga, Pilates, Boxe, Danse, Récupération
+   - Filtres: Durée (5-60+ min), Intensité, Équipement, Muscle, Niveau
+   - UI: Grid/List toggle, Search, Infinite scroll, Video preview, Bookmark
+   
+   Player:
+   - Video full-screen (portrait/landscape)
+   - Timer + progress ring
+   - Exercice actuel + suivant
+   - Contrôles: Play/Pause, Skip, Restart
+   - Ajustement intensité temps réel (IA)
+   - Heart rate monitor (Apple Watch/Garmin)
+   - Calories temps réel
+   - Coach vocal (TTS naturel)
+   - Musique (Spotify/Apple Music API)
+   - Form check IA (analyse posture via caméra)
+   - Rep counter automatique (ML Kit)
+   - Rest timer avec breathing animation
+   
+   Post-Workout:
+   - Résumé animé (confetti, stats)
+   - Rate workout (1-5 ⭐)
+   - Photo progress, Share social media
+   - Unlock achievement
+
+4. AI COACH PERSONNEL:
+   - Interface iMessage-style chat
+   - Analyse forme: Upload vidéo → feedback posture
+   - Nutrition advisor: Photo repas → calcul macros
+   - Motivation coach: Messages personnalisés
+   - Injury prevention: Détecte fatigue, suggère repos
+   - Program adjustment: Adapte en temps réel
+   - Q&A illimité
+   - Personnalité: Motivant, empathique, scientifique
+
+5. PROGRESS TRACKING:
+   Métriques: Poids, body fat %, mensurations, photos avant/après, force (1RM), endurance, flexibilité, sommeil, nutrition, hydratation, streak
+   Visualisations: Charts interactifs (Victory Native), Heatmap calendrier, Progress rings, Before/After slider, Body composition pie chart
+   Insights IA: Tendances, prédictions, recommandations
+
+6. NUTRITION & MEAL PLANNING:
+   - Meal planner IA (plan personnalisé)
+   - Recipe library (1000+ recettes avec macros)
+   - Barcode scanner
+   - Photo food logger (IA reconnaît aliments)
+   - Macro tracker (protéines, glucides, lipides, calories)
+   - Water tracker
+   - Meal prep guide
+   - Restaurant guide
+   - Supplement advisor
+
+7. GAMIFICATION & SOCIAL (RÉSEAU SOCIAL COMPLET):
+   VISION: Plus qu'une app fitness - Un mouvement de transformation qui change des vies
+
+   Profil Utilisateur:
+   - Avatar + bannière, Bio inspirante, Stats publiques, Timeline transformation
+   - Badges Certifiés: Bodybuilder, Nutritionniste, Yoga Instructor, Endurance Athlete, Transformation Coach, Fitness Educator, Elite Performer, 365 Days Warrior, Community Leader
+   - Progression publique/privée (toggle visibilité)
+   - Stories 24h + Highlights permanents
+
+   Réseau Social:
+   - Feed algorithmique (transformations, PRs, milestones, challenges, badges, recettes, tips)
+   - Interactions: Likes, Comments, Reposts, Send gift, Save, Share
+   - Follow system (suggested users, verified badges, top contributors)
+   - Groupes thématiques (chat, challenges, leaderboard, événements)
+   - Accountability partners (check-ins mutuels, encouragements)
+
+   Gamification:
+   - Système niveaux: Beginner → Novice → Intermediate → Advanced → Expert → Elite → Legend → Icon → Hall of Fame
+   - Gain XP: Workouts, streaks, challenges, badges, aider membres, créer programmes, posts viraux
+   - 100+ badges (streaks, workouts, transformation, strength, endurance, social, community, creator, mentor, seasonal)
+   - Challenges: Daily, Weekly, Monthly, Seasonal, Global, Charity
+   - Leaderboards: Global, Pays/Ville, Amis, Groupe, Par catégorie
+
+   Création Contenu:
+   - Programme Builder (créer, organiser, publier, monétiser)
+   - Devenir Coach Communautaire (programmes payants 70% revenus, sessions live, consultations 1-on-1)
+
+   Notifications Intelligentes:
+   - Rappels workout personnalisés
+   - Social notifications (follower, likes, comments, mentions)
+   - Achievements (badge unlocked, niveau up, milestones)
+   - AI coach proactif
+   - FOMO triggers éthiques
+
+8. SUBSCRIPTION & MONÉTISATION (RevenueCat):
+   FREE: 3 workouts/semaine, 50 workouts, AI coach (5 msg/jour), Ads, Profil limité
+   PREMIUM ($14.99/mois ou $119.99/an -33%): Illimité, 1000+ workouts, AI coach illimité, Form check IA, Nutrition complète, Offline, Apple Watch sync, Profil complet, Créer programmes, Stories, Groupes
+   ELITE ($29.99/mois ou $239.99/an -33%): Tout Premium + Coach humain (1h/mois), Nutritionniste, Early access, Merchandise, VIP events, Support <1h, Badge Elite, Coulisses, Affiliation 20%
+
+   Stratégie: Trial 7j, Paywall après 3 workouts, Upsell IA, Offres limitées, Social proof
+
+9. PROGRAMME AFFILIATION & INFLUENCEURS (REVENUS PASSIFS):
+   VISION: Transformer chaque user en ambassadeur. Récompenser ceux qui partagent.
+
+   Système Référencement:
+   - Lien unique: athleticaai.app/ref/USERNAME
+   - Commission à vie sur tous achats filleuls
+
+   Structure Commission:
+   - User Standard: 10% abonnements, 5% marketplace
+   - Influenceur Vérifié (1000+ followers): 15% abonnements, 10% marketplace, Bonus $100-500, Kit média
+   - Elite Affiliate (5000+ conversions): 20% abonnements, 15% marketplace, Bonus $2k-10k, Revenue share 2% niveau 2
+
+   Exemple Revenus: 1000 filleuls → 300 Premium + 50 Elite = ~$900/mois passif + bonus
+
+   Dashboard Affiliation:
+   - Métriques temps réel (clics, téléchargements, conversions, revenus, commission)
+   - Outils marketing (lien, QR code, bannières, vidéos, captions, discount codes)
+   - Gamification (niveaux Bronze→Diamond, badges, leaderboard, challenges)
+
+   Programme Influenceur VIP (10k+ followers):
+   - Commission 25%, Advance payment, Manager dédié, Landing page custom, Merch exclusif, Co-branded content, Event hosting, Revenue share 5% niveau 2, Equity option
+
+   Psychologie Partage:
+   - Triggers: Reciprocity, Social proof, Scarcity, Authority, Liking, Commitment
+   - Incentives: 1 mois gratuit/ami, 20% off filleul, Double reward, Group discount, Charity option
+   - Moments optimaux: Post-workout, milestone, transformation, streak, compliment
+   - Partage facilité: Bouton partout, Templates stories, One-tap share, Leaderboard recruiters
+
+10. PSYCHOLOGIE & DÉVELOPPEMENT PERSONNEL (80% Mental, 20% Physique):
+   PHILOSOPHIE: "La transformation physique commence dans l'esprit"
+
+   Mindset Training:
+   - Daily affirmations, Visualization, Gratitude journal, Win tracking, Fear confrontation
+   - Habit stacking (Atomic Habits), Identity-based goals, Mental resilience
+
+   Emotional Intelligence:
+   - Mood tracking (corrélation performance), Stress management (breathing, HRV)
+   - Confidence building, Emotional triggers, Burnout prevention
+
+   Purpose & Meaning:
+   - 5 Whys exercise, Vision board, Future self letter, Values alignment
+   - Life transformation tracking (énergie, sommeil, productivité, relations, carrière)
+
+   Transformation Holistique:
+   - Physical (20%): Workouts, nutrition, récupération
+   - Mental (40%): Mindset, discipline, émotions, stress, confiance
+   - Lifestyle (40%): Sommeil, énergie, productivité, relations, finances, spiritualité
+
+---
+
+FEATURES PREMIUM (Différenciateurs):
+
+TECHNIQUES:
+- AR Workout Coach (Coach virtuel 3D, ARKit/ARCore)
+- DNA-Based Programming (Intégration 23andMe, optimisation génétique)
+- AI Music Generator (Playlists adaptées BPM)
+- Biometric Integration (Apple Watch, Garmin, Whoop, Oura, HRV, recovery)
+- Injury Rehab Programs (Programmes kiné certifiés)
+- Global Challenges (Challenges mondiaux, prizes)
+- Live Classes (Cours en direct, chat, leaderboard)
+- Marketplace Créateur (Users vendent programmes, meals, guides, consultations, merch)
+- Education Hub (Cours certifiants, webinars, podcast)
+
+UNIQUES (Jamais vu ailleurs):
+- Transformation Timeline (ligne temps interactive, photos avant/après, vidéo time-lapse auto)
+- AI Transformation Predictor (upload photo → IA génère "toi dans 3 mois" hyper réaliste)
+- Voice Journal (enregistrer pensées post-workout, IA transcrit, podcast personnel)
+- Transformation Story Builder (vidéo transformation auto, musique épique, transitions pro)
+- Legacy Mode (créer programme pour autres, mentorat auto, impact counter vies changées)
+- Reverse Bucket List (accomplissements fitness, partage fierté, preuve capacités)
+
+PUBLICATION WORKOUT DÉTAILLÉE:
+- Formulaire post-workout: Vidéo, exercices (séries×reps, poids, pause, tempo, RPE), durée, calories, intensité, équipement, muscles, caption, hashtags, localisation, musique, mood
+- Visibilité: Public, amis, groupes, privé, cross-post réseaux sociaux
+- Workout → Programme public (1-click, autres peuvent essayer, leaderboard performance)
+- Interactions: Likes, comments, "J'ai fait ce workout!", comparer stats, juger difficulté, sauvegarder
+
+MARKETPLACE CRÉATEUR (Monétisation Users):
+Users peuvent vendre:
+1. Programmes entraînement ($9.99-$199.99, app 30%, créateur 70%)
+2. Workout plans individuels ($0.99-$9.99)
+3. Meal plans & recettes ($4.99-$49.99)
+4. Guides & e-books ($9.99-$99.99)
+5. Templates & trackers ($2.99-$19.99)
+6. Consultations 1-on-1 ($49.99-$299.99, booking intégré)
+7. Merchandise physique ($14.99-$49.99, dropshipping, app 20%)
+8. Challenges payants ($29.99-$199.99, groupe privé)
+9. Produits dev perso (méditations, affirmations, journaling, $4.99-$49.99)
+Dashboard créateur: Revenus temps réel, analytics, paiements, withdraw
+
+DÉFIS COMMUNAUTAIRES (Engagement Massif):
+Types:
+1. Défis populaires (app): 30 Days Abs, 100 Push-ups/day, Run 100km/30j, No Sugar November, Transformation 90j
+2. Défis créés par users: N'importe qui peut lancer (nom, règles, durée, type, objectif, gratuit/payant, public/privé, prizes)
+3. Défis live: Workout temps réel avec créateur, chat, leaderboard, countdown, replay 48h
+4. Défis vidéo pré-enregistrés: Follow-along, submit résultats, leaderboard auto
+Leaderboard: Temps réel, filtres (global, amis, pays, âge, genre), profil cliquable, badges top performers
+Preuve: Vidéo obligatoire, photo, stats device, validation communauté, modération IA
+Récompenses: Badges exclusifs, XP bonus, prizes physiques, cash, featured, unlock contenu
+Exemples viraux: Burpee Challenge, Plank Hold, Transformation 90j, Charity Run, Team Challenge, Murph, 75 Hard
+
+TÉMOIGNAGES & SUCCESS STORIES (Social Proof):
+Section "Transformations": Featured stories, community stories, filtres (objectif, durée, âge, genre)
+Format: Photos avant/après (slider), vidéo témoignage (30s-2min), timeline progression, stats transformation, histoire écrite (200-500 mots), programme suivi, coach/mentor
+Validation: IA détecte photoshop, cross-check data app, badge "Verified Transformation", upvotes
+Gamification: Submit = Badge "Transformer" + 500 XP, Featured = Badge "Inspiration" + 2000 XP + merch, 100+ upvotes = Badge "Community Hero", Top 10 année = Hall of Fame + $1000
+
+NIVEAUX DE MEMBRES (Hiérarchie & Status):
+8 niveaux: Newbie (0-100 XP) → Apprentice (101-500) → Warrior (501-1500) → Champion (1501-3000) → Master (3001-5000) → Legend (5001-10000) → Icon (10001-20000) → Hall of Fame (20001+)
+Avantages visuels: Border profil couleur, animation badge, effet particules, nom en couleur, priority support, custom flair
+Prestige System: Après Hall of Fame, reset XP mais garde avantages, Prestige 1, 2, 3... infini, badge "Immortal" Prestige 10
+
+CULTE DU FITNESS (Créer Mythe Mondial):
+Manifesto: "Nous sommes les Warriors. Discipline > Confort. Douleur → Pouvoir. Chaque rep = prière. Nous sommes inarrêtables."
+10 Commandements du Warrior: Tu ne skiperas point, Tu célébreras victoires autres, Tu partageras connaissances, etc.
+Valeurs: Discipline, Résilience, Communauté, Progression, Mindset, Authenticité
+Rituels: Morning Ritual (5AM Club, mantra, gratitude, visualization, cold shower), Workout Ritual (intention, music, post-gratitude), Weekly Ceremony (Sunday reflection, Friday celebration)
+Langage tribal: Warriors, The Forge, Reps = Prayers, Iron Temple, Sweat Equity, Pain Cave, Beast Mode
+Symboles: Logo warrior (spartiate + éclair), couleurs (noir, or, rouge), emojis exclusifs, merchandise culte
+Événements IRL: AthleticaAI Summit (annuel, convention mondiale), Regional Meetups (mensuels), Charity Events
+Secret Society: The Inner Circle (top 1%, invitation only, forum privé, événements exclusifs)
+Legendary Quests: The Spartan (300 burpees+squats+push-ups), The Marathon, The Ironman, The Titan, The Phoenix
+Contenu inspirant: Daily Warrior Wisdom, Podcast "The Warrior's Path", Documentary Series, Warrior Academy (cours certifiants)
+
+INNOVATIONS RÉVOLUTIONNAIRES:
+1. AI Workout Buddy: Compagnon IA émotionnel (personnalités: Drill Sergeant, Best Friend, Zen Master, Comedian), pep talks, encouragements, check-ins émotionnels, intelligence émotionnelle
+2. Virtual Gym (Métaverse): VR/AR, environnements (Spartan Arena, Cyberpunk City, Tropical Beach, Space Station), avatar personnalisé, multiplayer, coach 3D, gamification (ennemis, boss fights)
+3. DNA & Biohacking: 23andMe integration, analyse génétique, programme optimisé, biomarkers tracking (blood tests, sleep, stress, recovery), longevity focus (biological age)
+4. Social Accountability Extreme: Bet money ($50-500), charity donation auto, public commitment, referee ami, consequences, shame board (opt-in), IA texte/appelle si skip
+5. Transformation Prediction AI: Upload photo → IA génère "toi dans 12 semaines" (best/realistic/worst case), weekly updates, body morphing video
+6. Workout Dating: Rencontres fitness, swipe Tinder-style, first date = workout, couple challenges, success stories
+7. AI Meal Prep Robot: Robot cuisine prépare meals selon macros (futur)
+8. Genetic Matchmaking: Compatibilité génétique partenaire (controversé, optionnel)
+9. Cryotherapy & Recovery Pods: Partenariats centres récupération, booking in-app
+10. Warrior Retreats: Retraites transformation 7-30j (Bali, Thaïlande, Costa Rica), $2k-10k, all-inclusive
+11. AI Injury Prevention: IA prédit blessures avant qu'elles arrivent, alerts, prévention
+12. Warrior Tattoos: Tattoos officiels AthleticaAI = Elite gratuit 5 ans, badge "Marked Warrior"
+13. Warrior Funerals: Honorer warriors décédés, profil memorial, legacy lives on, motivation memento mori
+
+---
+
+OPTIMISATIONS PERFORMANCE:
+- Lazy loading composants
+- Memoization (React.memo)
+- Virtual lists (FlashList)
+- Image optimization (FastImage)
+- Video caching
+- Reanimated 3 (UI thread)
+- Skia pour graphics
+- React Query caching
+- Offline-first (MMKV)
+- Target: 60 FPS, < 3s cold start, < 50MB bundle
+
+---
+
+ARCHITECTURE:
+athleticaai-mobile/
+├── app/                    # Expo Router
+│   ├── (auth)/
+│   ├── (tabs)/
+│   ├── (modals)/
+│   └── (onboarding)/
+├── src/
+│   ├── components/
+│   │   ├── ui/
+│   │   ├── workout/
+│   │   ├── ai/
+│   │   ├── nutrition/
+│   │   ├── progress/
+│   │   ├── social/
+│   │   └── animations/
+│   ├── features/
+│   │   ├── onboarding/
+│   │   ├── workout/
+│   │   ├── nutrition/
+│   │   ├── progress/
+│   │   ├── ai-coach/
+│   │   ├── social/
+│   │   └── subscription/
+│   ├── services/
+│   │   ├── api/
+│   │   ├── ai/
+│   │   ├── analytics/
+│   │   └── notifications/
+│   ├── stores/
+│   ├── hooks/
+│   ├── utils/
+│   ├── types/
+│   └── theme/
+├── assets/
+└── supabase/
+
+---
+
+DATABASE (Supabase):
+Tables: users, user_profiles, workouts, workout_exercises, user_workout_history, meals, progress_entries, ai_chat_messages, social_posts, user_follows, challenges, user_challenges, achievements, user_achievements
+
+---
+
+BUSINESS MODEL:
+Revenue: Subscriptions (80%), Marketplace (10%), Corporate B2B (5%), Ads (5%)
+Targets: An 1: 50k downloads, 5k payants ($75k MRR) | An 2: 200k downloads, 20k payants ($300k MRR) | An 3: 500k downloads, 50k payants ($750k MRR)
+
+---
+
+SUCCESS CRITERIA:
+Technique: 60 FPS, < 3s cold start, < 1% crash rate, 4.5+ stars stores, 80%+ code coverage
+Business: 10% conversion free→paid, < 5% churn, 40%+ retention D30, $100k+ MRR en 12 mois
+
+---
+
+PHILOSOPHIE: "Invisible Technology, Visible Results"
+L'app doit être: Intuitive, Rapide (< 100ms), Belle (Apple-quality), Motivante, Scientifique, Personnelle, Addictive
+
+---
+
+INSTRUCTIONS:
+
+Crée maintenant une application mobile React Native COMPLÈTE qui:
+
+1. ✅ Respecte 100% specs ci-dessus
+2. ✅ TypeScript strict partout
+3. ✅ Design system Apple-style implémenté
+4. ✅ Toutes features core (MVP) fonctionnelles
+5. ✅ Performance optimisée (60 FPS constant)
+6. ✅ Animations fluides (Reanimated 3)
+7. ✅ Supabase + AI services configurés
+8. ✅ RevenueCat subscriptions intégrés
+9. ✅ Analytics (Mixpanel) configurés
+10. ✅ Code production-ready, commenté, testé
+
+COMMENCE PAR:
+- Setup projet complet (Expo + TypeScript)
+- Design system + theme
+- Navigation structure (Expo Router)
+- Auth flow (Supabase)
+- Onboarding complet (10 étapes)
+- Dashboard home avec animations
+- Workout library avec filtres
+- Workout player avec video
+
+GÉNÈRE DU CODE PRODUCTION-READY, COMMENTÉ, OPTIMISÉ.
+
+IMPORTANT:
+- Utilise les meilleures pratiques React Native
+- Code modulaire et réutilisable
+- Gestion d'erreurs robuste
+- Loading states partout
+- Animations smooth (60 FPS)
+- Responsive (tous écrans)
+- Accessible (VoiceOver/TalkBack)
+- Offline-first quand possible
+
+GO! 🚀
+
+===========================================
+FIN DU PROMPT - COPIER TOUT CE QUI EST AU-DESSUS
+===========================================
+
