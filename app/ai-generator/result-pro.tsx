@@ -28,15 +28,21 @@ import { Button, Card } from '@components/ui';
 import type { AIGeneratorFormData, NutritionPlan, ProgramType } from '@/types/aiGenerator';
 import { PROGRAM_TEMPLATES, FITNESS_GOAL_INFO } from '@/types/aiGenerator';
 import { generateNutritionPlan, calculateBMI, getBMICategory, estimateTimeToGoal } from '@/services/nutrition';
+import { generateWorkoutWithAI, type AIGeneratedWorkout } from '@/services/ai/openai';
+import { useClerkAuth } from '@/hooks/useClerkAuth';
 
 export default function AIGeneratorResultProScreen() {
   const theme = useStyledTheme();
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { user, profile } = useClerkAuth();
 
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState<AIGeneratorFormData | null>(null);
   const [nutritionPlan, setNutritionPlan] = useState<NutritionPlan | null>(null);
+  const [aiWorkout, setAiWorkout] = useState<AIGeneratedWorkout | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   // Theme colors
   const bgColors = {
@@ -64,19 +70,93 @@ export default function AIGeneratorResultProScreen() {
       const data: AIGeneratorFormData = JSON.parse(params.formData as string);
       setFormData(data);
 
-      // Generate nutrition plan
+      // Generate nutrition plan (local calculations)
       const plan = generateNutritionPlan(data);
       setNutritionPlan(plan);
 
-      // TODO: Generate workout program with OpenAI
-      // For now, just show nutrition plan
-
+      // Stop initial loading (show nutrition plan)
       setLoading(false);
+
+      // 🤖 GENERATE WORKOUT WITH OPENAI GPT-4 (separate loading)
+      setAiLoading(true);
+      console.log('🤖 [AI Generator] Calling OpenAI GPT-4 API...');
+      console.log('📊 [AI Generator] Request params:', {
+        goal: mapGoalToOpenAI(data.experience_goal.goal),
+        fitness_level: data.experience_goal.fitness_level,
+        duration_minutes: data.availability.session_duration,
+        equipment: mapEquipmentToOpenAI(data.availability.equipment),
+      });
+
+      try {
+        if (!user?.id) {
+          throw new Error('User not authenticated');
+        }
+
+        // Map profile subscription tier to rate limiter tier
+        const subscriptionTier = profile?.subscription_tier === 'elite'
+          ? 'premium_88' as const
+          : profile?.subscription_tier === 'premium'
+          ? 'premium_44' as const
+          : 'free' as const;
+
+        const aiResult = await generateWorkoutWithAI(
+          {
+            goal: mapGoalToOpenAI(data.experience_goal.goal),
+            fitness_level: data.experience_goal.fitness_level === 'expert' ? 'elite' : data.experience_goal.fitness_level,
+            duration_minutes: data.availability.session_duration,
+            equipment: mapEquipmentToOpenAI(data.availability.equipment),
+            location: 'gym',
+            intensity: data.experience_goal.fitness_level === 'expert' ? 'extreme' : data.experience_goal.fitness_level === 'advanced' ? 'high' : 'moderate',
+            include_warmup: true,
+            include_cooldown: true,
+            notes: `User injuries: ${data.availability.injuries.join(', ')}. Training ${data.availability.days_per_week} days/week.`,
+          },
+          user.id,
+          subscriptionTier
+        );
+
+        console.log('✅ [AI Generator] OpenAI workout generated successfully!', {
+          exercises: aiResult.exercises.length,
+          title: aiResult.workout.title,
+          description: aiResult.workout.description,
+          explanation: aiResult.explanation?.substring(0, 100) + '...',
+        });
+        setAiWorkout(aiResult);
+      } catch (aiError) {
+        console.error('❌ [AI Generator] OpenAI API error:', aiError);
+        console.error('❌ [AI Generator] Full error:', JSON.stringify(aiError, null, 2));
+        setGenerationError(aiError instanceof Error ? aiError.message : 'AI generation failed');
+      } finally {
+        setAiLoading(false);
+      }
     } catch (error) {
       console.error('[AI Generator Result] Error loading data:', error);
       Alert.alert('Error', 'Failed to generate program. Please try again.');
       router.back();
     }
+  };
+
+  // Helper: Map fitness goal to OpenAI format
+  const mapGoalToOpenAI = (goal: string): any => {
+    const mapping: Record<string, any> = {
+      hypertrophy: 'build_muscle',
+      fat_loss: 'lose_weight',
+      strength: 'increase_strength',
+      endurance: 'improve_endurance',
+      recomposition: 'build_muscle',
+    };
+    return mapping[goal] || 'build_muscle';
+  };
+
+  // Helper: Map equipment to OpenAI format
+  const mapEquipmentToOpenAI = (equipment: string): string[] => {
+    if (equipment === 'full_gym') return ['dumbbells', 'barbell', 'bench', 'cables', 'machines'];
+    if (equipment === 'home_gym_full') return ['dumbbells', 'barbell', 'bench'];
+    if (equipment === 'home_gym_basic') return ['dumbbells', 'bench'];
+    if (equipment === 'dumbbells_only') return ['dumbbells'];
+    if (equipment === 'bodyweight') return ['none'];
+    if (equipment === 'resistance_bands') return ['resistance_bands'];
+    return ['dumbbells'];
   };
 
   const handleSaveProgram = () => {
@@ -152,77 +232,6 @@ export default function AIGeneratorResultProScreen() {
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
-        {/* Success Message */}
-        <Card shadow="lg" padding="lg" style={{ marginBottom: 20 }}>
-          <View style={styles.successHeader}>
-            <View style={styles.successIcon}>
-              <Ionicons name="checkmark-circle" size={48} color={theme.colors.success[500]} />
-            </View>
-            <Text style={[styles.successTitle, { color: textColors.primary }]}>
-              Program Generated! 🎉
-            </Text>
-            <Text style={[styles.successSubtitle, { color: textColors.secondary }]}>
-              We've created a personalized {selectedProgramInfo.name} program tailored to your goals and lifestyle.
-            </Text>
-          </View>
-        </Card>
-
-        {/* Program Overview */}
-        <Text style={[styles.sectionTitle, { color: textColors.primary }]}>
-          💪 Program Overview
-        </Text>
-        <Card shadow="md" padding="lg" style={{ marginBottom: 20 }}>
-          <View style={styles.programOverview}>
-            <View style={styles.overviewRow}>
-              <Ionicons name="fitness" size={24} color={theme.colors.primary[500]} />
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={[styles.overviewLabel, { color: textColors.tertiary }]}>
-                  Program Type
-                </Text>
-                <Text style={[styles.overviewValue, { color: textColors.primary }]}>
-                  {selectedProgramInfo.name}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.overviewRow}>
-              <Ionicons name={goalInfo.icon as any} size={24} color={goalInfo.color} />
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={[styles.overviewLabel, { color: textColors.tertiary }]}>
-                  Primary Goal
-                </Text>
-                <Text style={[styles.overviewValue, { color: textColors.primary }]}>
-                  {goalInfo.label}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.overviewRow}>
-              <Ionicons name="calendar" size={24} color={theme.colors.secondary[500]} />
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={[styles.overviewLabel, { color: textColors.tertiary }]}>
-                  Training Frequency
-                </Text>
-                <Text style={[styles.overviewValue, { color: textColors.primary }]}>
-                  {availability.days_per_week} days/week • {availability.session_duration} min/session
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.overviewRow}>
-              <Ionicons name="barbell" size={24} color={theme.colors.warning[500]} />
-              <View style={{ flex: 1, marginLeft: 12 }}>
-                <Text style={[styles.overviewLabel, { color: textColors.tertiary }]}>
-                  Equipment
-                </Text>
-                <Text style={[styles.overviewValue, { color: textColors.primary }]}>
-                  {availability.equipment.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-                </Text>
-              </View>
-            </View>
-          </View>
-        </Card>
-
         {/* Nutrition Plan */}
         <Text style={[styles.sectionTitle, { color: textColors.primary }]}>
           🍽️ Nutrition Plan
@@ -438,6 +447,183 @@ export default function AIGeneratorResultProScreen() {
                 </Text>
                 <Text style={[styles.infoSubtext, { color: textColors.tertiary }]}>
                   {personal_profile.current_weight_kg}kg → {personal_profile.goal_weight_kg}kg at {timeEstimate.rate_per_week_kg}kg/week
+                </Text>
+              </View>
+            </View>
+          </Card>
+        )}
+
+        {/* AI GENERATED WORKOUT */}
+        <Text style={[styles.sectionTitle, { color: textColors.primary }]}>
+          🤖 AI-Generated Workout
+        </Text>
+
+        {/* AI Loading State */}
+        {aiLoading && !aiWorkout && (
+          <Card shadow="md" padding="lg" style={{ marginBottom: 20 }}>
+            <View style={styles.aiLoadingContent}>
+              <ActivityIndicator size="large" color={theme.colors.primary[500]} />
+              <Text style={[styles.aiLoadingTitle, { color: textColors.primary }]}>
+                Generating with GPT-4 Turbo...
+              </Text>
+              <Text style={[styles.aiLoadingSubtitle, { color: textColors.secondary }]}>
+                Creating science-backed workout personalized for your goals
+              </Text>
+              <Text style={[styles.aiLoadingCost, { color: textColors.tertiary }]}>
+                ⏱️ This may take 10-30 seconds
+              </Text>
+            </View>
+          </Card>
+        )}
+
+        {/* AI Success - Show Workout */}
+        {aiWorkout && !aiLoading && (
+          <>
+            <Card shadow="md" padding="lg" style={{ marginBottom: 12 }}>
+              <Text style={[styles.aiWorkoutTitle, { color: theme.colors.primary[500] }]}>
+                {aiWorkout.workout.title}
+              </Text>
+              <Text style={[styles.aiWorkoutDescription, { color: textColors.secondary }]}>
+                {aiWorkout.workout.description}
+              </Text>
+
+              {/* Workout Meta */}
+              <View style={styles.workoutMeta}>
+                <View style={styles.workoutMetaItem}>
+                  <Ionicons name="time-outline" size={18} color={textColors.tertiary} />
+                  <Text style={[styles.workoutMetaText, { color: textColors.secondary }]}>
+                    {aiWorkout.workout.estimated_duration_minutes} min
+                  </Text>
+                </View>
+                <View style={styles.workoutMetaItem}>
+                  <Ionicons name="flame-outline" size={18} color={textColors.tertiary} />
+                  <Text style={[styles.workoutMetaText, { color: textColors.secondary }]}>
+                    ~{aiWorkout.workout.estimated_calories} cal
+                  </Text>
+                </View>
+                <View style={styles.workoutMetaItem}>
+                  <Ionicons name="barbell-outline" size={18} color={textColors.tertiary} />
+                  <Text style={[styles.workoutMetaText, { color: textColors.secondary }]}>
+                    {aiWorkout.exercises.length} exercises
+                  </Text>
+                </View>
+              </View>
+            </Card>
+
+            {/* Exercises List */}
+            <Card shadow="md" padding="lg" style={{ marginBottom: 12 }}>
+              <Text style={[styles.cardTitle, { color: textColors.primary }]}>
+                💪 Exercises ({aiWorkout.exercises.length})
+              </Text>
+
+              {aiWorkout.exercises.map((exercise, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.exerciseCard,
+                    { backgroundColor: bgColors.surface, borderColor: bgColors.border },
+                  ]}
+                >
+                  <View style={styles.exerciseHeader}>
+                    <Text style={[styles.exerciseNumber, { color: theme.colors.primary[500] }]}>
+                      {index + 1}
+                    </Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.exerciseName, { color: textColors.primary }]}>
+                        {exercise.name}
+                      </Text>
+                      {exercise.muscle_groups && exercise.muscle_groups.length > 0 && (
+                        <Text style={[styles.exerciseMuscles, { color: textColors.tertiary }]}>
+                          {exercise.muscle_groups.join(', ')}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+
+                  {/* Sets/Reps/Rest */}
+                  <View style={styles.exerciseStats}>
+                    <View style={styles.exerciseStat}>
+                      <Text style={[styles.exerciseStatLabel, { color: textColors.tertiary }]}>
+                        Sets
+                      </Text>
+                      <Text style={[styles.exerciseStatValue, { color: textColors.primary }]}>
+                        {exercise.sets}
+                      </Text>
+                    </View>
+                    <View style={styles.exerciseStat}>
+                      <Text style={[styles.exerciseStatLabel, { color: textColors.tertiary }]}>
+                        {exercise.reps ? 'Reps' : 'Time'}
+                      </Text>
+                      <Text style={[styles.exerciseStatValue, { color: textColors.primary }]}>
+                        {exercise.reps || `${exercise.duration_seconds}s`}
+                      </Text>
+                    </View>
+                    <View style={styles.exerciseStat}>
+                      <Text style={[styles.exerciseStatLabel, { color: textColors.tertiary }]}>
+                        Rest
+                      </Text>
+                      <Text style={[styles.exerciseStatValue, { color: textColors.primary }]}>
+                        {exercise.rest_seconds}s
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Tips */}
+                  {exercise.tips && exercise.tips.length > 0 && (
+                    <View style={styles.exerciseTips}>
+                      <Ionicons name="information-circle" size={16} color={theme.colors.primary[500]} />
+                      <Text style={[styles.exerciseTipText, { color: textColors.secondary }]}>
+                        {exercise.tips[0]}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+            </Card>
+
+            {/* AI Explanation */}
+            {aiWorkout.explanation && (
+              <Card shadow="md" padding="lg" style={{ marginBottom: 12 }}>
+                <Text style={[styles.cardTitle, { color: textColors.primary }]}>
+                  📖 Why This Workout?
+                </Text>
+                <Text style={[styles.explanationText, { color: textColors.secondary }]}>
+                  {aiWorkout.explanation}
+                </Text>
+              </Card>
+            )}
+
+            {/* AI Tips */}
+            {aiWorkout.tips && aiWorkout.tips.length > 0 && (
+              <Card shadow="md" padding="lg" style={{ marginBottom: 20 }}>
+                <Text style={[styles.cardTitle, { color: textColors.primary }]}>
+                  💡 Training Tips
+                </Text>
+                {aiWorkout.tips.map((tip, index) => (
+                  <View key={index} style={styles.tipRow}>
+                    <Text style={[styles.tipBullet, { color: theme.colors.primary[500] }]}>•</Text>
+                    <Text style={[styles.tipText, { color: textColors.secondary }]}>{tip}</Text>
+                  </View>
+                ))}
+              </Card>
+            )}
+          </>
+        )}
+
+        {/* Error Display */}
+        {generationError && !aiWorkout && (
+          <Card shadow="md" padding="lg" style={{ marginBottom: 20, backgroundColor: theme.colors.error[500] + '20', borderColor: theme.colors.error[500], borderWidth: 1 }}>
+            <View style={styles.errorContent}>
+              <Ionicons name="warning" size={32} color={theme.colors.error[500]} />
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={[styles.errorTitle, { color: theme.colors.error[500] }]}>
+                  AI Generation Failed
+                </Text>
+                <Text style={[styles.errorText, { color: textColors.secondary }]}>
+                  {generationError}
+                </Text>
+                <Text style={[styles.errorSubtext, { color: textColors.tertiary }]}>
+                  Your nutrition plan is ready, but we couldn't generate the workout. Check your OpenAI API key or try again later.
                 </Text>
               </View>
             </View>
@@ -669,5 +855,160 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginBottom: 8,
     lineHeight: 20,
+  },
+  aiWorkoutTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  aiWorkoutDescription: {
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+  workoutMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.1)',
+  },
+  workoutMetaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  workoutMetaText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  exerciseCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 12,
+  },
+  exerciseHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  exerciseNumber: {
+    fontSize: 20,
+    fontWeight: '700',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    textAlign: 'center',
+    lineHeight: 32,
+    marginRight: 12,
+  },
+  exerciseName: {
+    fontSize: 17,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  exerciseMuscles: {
+    fontSize: 13,
+    textTransform: 'capitalize',
+  },
+  exerciseStats: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+    marginBottom: 8,
+  },
+  exerciseStat: {
+    alignItems: 'center',
+  },
+  exerciseStatLabel: {
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  exerciseStatValue: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  exerciseTips: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+  },
+  exerciseTipText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  explanationText: {
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  tipRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  tipBullet: {
+    fontSize: 18,
+    marginRight: 8,
+    fontWeight: '700',
+  },
+  tipText: {
+    flex: 1,
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  errorContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  errorText: {
+    fontSize: 15,
+    marginBottom: 8,
+    lineHeight: 20,
+  },
+  errorSubtext: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  aiLoadingContent: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  aiLoadingTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  aiLoadingSubtitle: {
+    fontSize: 15,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  aiLoadingCost: {
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  debugTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  debugText: {
+    fontSize: 14,
+    marginBottom: 6,
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
 });

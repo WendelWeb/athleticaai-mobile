@@ -14,7 +14,7 @@
 import { db, userAchievements, profiles } from '@/db';
 import { eq, and, desc } from 'drizzle-orm';
 import type { Achievement } from '@/services/achievements/AchievementEngine';
-import { logger } from '@/utils/logger';
+import { logger, handleError } from '@/utils';
 
 // =====================================================
 // INTERFACES
@@ -116,7 +116,12 @@ export async function unlockAchievement(
       unlocked_at: inserted.unlocked_at.toISOString(),
     };
   } catch (error) {
-    logger.error('[Achievements] Failed to unlock', error instanceof Error ? error : undefined);
+    handleError(error, {
+      message: 'Failed to unlock achievement',
+      description: 'Could not save achievement progress',
+      showToast: false, // Silent - achievements are optional
+      context: 'Achievements.unlockAchievement',
+    });
     return null;
   }
 }
@@ -200,8 +205,13 @@ export async function getUserAchievements(
       unlocked_at: r.unlocked_at.toISOString(),
     }));
   } catch (error) {
-    logger.error('[Achievements] Failed to fetch', error instanceof Error ? error : undefined);
-    return [];
+    handleError(error, {
+      message: 'Failed to load achievements',
+      description: 'Unable to load your achievements',
+      showToast: true,
+      context: 'Achievements.getUserAchievements',
+    });
+    throw error; // Let React Query handle error state
   }
 }
 
@@ -241,14 +251,13 @@ export async function getAchievementStats(userId: string): Promise<AchievementSt
 
     return stats;
   } catch (error) {
-    logger.error('[Achievements] Failed to get stats', error instanceof Error ? error : undefined);
-    return {
-      total_achievements: 0,
-      total_points: 0,
-      rarity_distribution: { common: 0, rare: 0, epic: 0, legendary: 0 },
-      type_distribution: { performance: 0, milestone: 0, streak: 0, volume: 0, speed: 0, special: 0 },
-      recent_achievements: [],
-    };
+    handleError(error, {
+      message: 'Failed to load achievement stats',
+      description: 'Unable to load achievement statistics',
+      showToast: true,
+      context: 'Achievements.getAchievementStats',
+    });
+    throw error; // Let React Query handle error state
   }
 }
 
@@ -273,7 +282,11 @@ export async function hasAchievement(
 
     return result.length > 0;
   } catch (error) {
-    logger.error('[Achievements] Failed to check', error instanceof Error ? error : undefined);
+    handleError(error, {
+      message: 'Failed to check achievement',
+      showToast: false, // Silent - non-critical check
+      context: 'Achievements.hasAchievement',
+    });
     return false;
   }
 }

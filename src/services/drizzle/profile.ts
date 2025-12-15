@@ -13,31 +13,7 @@
 
 import { db, profiles } from '@/db';
 import { eq } from 'drizzle-orm';
-import { logger } from '@/utils/logger';
-
-/**
- * Safely convert a value to ISO string
- * Handles invalid dates, null, undefined, and malformed timestamps
- */
-const safeToISOString = (value: any): string | null => {
-  if (!value) return null;
-
-  try {
-    // If it's already a Date object
-    if (value instanceof Date) {
-      // Check if it's a valid date
-      if (isNaN(value.getTime())) return null;
-      return value.toISOString();
-    }
-
-    // If it's a string or number, try to create a Date
-    const date = new Date(value);
-    if (isNaN(date.getTime())) return null;
-    return date.toISOString();
-  } catch (error) {
-    return null;
-  }
-};
+import { logger, handleError, safeToISOString } from '@/utils';
 
 // Re-export Profile interface (same as Supabase)
 export interface Profile {
@@ -66,6 +42,9 @@ export interface Profile {
   onboarding_completed: boolean;
   created_at: string;
   updated_at: string;
+
+  // Coaching
+  is_coach?: boolean;
 
   // Onboarding fields
   age?: number | null;
@@ -110,6 +89,7 @@ export interface UpdateProfileData {
   preferred_workout_time?: string;
   notifications_enabled?: boolean;
   onboarding_completed?: boolean;
+  is_coach?: boolean;
 
   // Onboarding fields
   age?: number;
@@ -169,6 +149,7 @@ export const getProfile = async (
       preferred_workout_time: profileData.preferred_workout_time || '07:00:00',
       notifications_enabled: profileData.notifications_enabled ?? true,
       onboarding_completed: profileData.onboarding_completed ?? false,
+      is_coach: profileData.is_coach ?? false,
       created_at: safeToISOString(profileData.created_at) || new Date().toISOString(),
       updated_at: safeToISOString(profileData.updated_at) || new Date().toISOString(),
 
@@ -200,11 +181,13 @@ export const getProfile = async (
       error: null,
     };
   } catch (error) {
-    logger.error('[Profile] Failed to get profile', error instanceof Error ? error : undefined, { userId });
-    return {
-      profile: null,
-      error,
-    };
+    handleError(error, {
+      message: 'Failed to load profile',
+      description: 'Unable to load your profile data',
+      showToast: true,
+      context: 'ProfileService.getProfile',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -240,11 +223,13 @@ export const createProfile = async (
     // Fetch the created profile
     return getProfile(userId);
   } catch (error) {
-    logger.error('[Profile] Failed to create profile', error instanceof Error ? error : undefined, { userId });
-    return {
-      profile: null,
-      error,
-    };
+    handleError(error, {
+      message: 'Failed to create profile',
+      description: 'Could not create your profile',
+      showToast: true,
+      context: 'ProfileService.createProfile',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -290,11 +275,13 @@ export const updateProfile = async (
     // Fetch the updated profile
     return getProfile(userId);
   } catch (error) {
-    logger.error('[Profile] Failed to update profile', error instanceof Error ? error : undefined, { userId });
-    return {
-      profile: null,
-      error,
-    };
+    handleError(error, {
+      message: 'Failed to update profile',
+      description: 'Your changes could not be saved',
+      showToast: true,
+      context: 'ProfileService.updateProfile',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -326,11 +313,13 @@ export const uploadAvatar = async (
       error: null,
     };
   } catch (error) {
-    logger.error('[Profile] Failed to upload avatar', error instanceof Error ? error : undefined, { userId });
-    return {
-      url: null,
-      error,
-    };
+    handleError(error, {
+      message: 'Failed to upload avatar',
+      description: 'Could not upload profile picture',
+      showToast: true,
+      context: 'ProfileService.uploadAvatar',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -346,7 +335,12 @@ export const deleteAvatar = async (userId: string, avatarUrl: string): Promise<{
 
     return { error: null };
   } catch (error) {
-    logger.error('[Profile] Failed to delete avatar', error instanceof Error ? error : undefined, { userId });
-    return { error };
+    handleError(error, {
+      message: 'Failed to delete avatar',
+      description: 'Could not remove profile picture',
+      showToast: true,
+      context: 'ProfileService.deleteAvatar',
+    });
+    throw error; // Let React Query handle error state
   }
 };

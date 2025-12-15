@@ -11,56 +11,7 @@
 
 import { db, mealLogs, dailyNutritionLogs, waterLogs, recipes, nutritionPlans } from '@/db';
 import { eq, desc, and, sql, gte, lte, asc } from 'drizzle-orm';
-import { logger } from '@/utils/logger';
-
-// =====================================================
-// HELPERS
-// =====================================================
-
-/**
- * Convert date to ISO string (handles both Date objects and strings from Neon)
- * ROBUST version that handles ALL edge cases including invalid dates
- */
-const toISOString = (date: any, fallback: string = new Date().toISOString()): string => {
-  // Null/undefined check
-  if (!date) return fallback;
-
-  try {
-    // Already a valid ISO string from Neon
-    if (typeof date === 'string') {
-      // Validate it's a parseable date string
-      const testDate = new Date(date);
-      if (!isNaN(testDate.getTime())) {
-        return date;
-      }
-      return fallback;
-    }
-
-    // Date object
-    if (date instanceof Date) {
-      const timestamp = date.getTime();
-      // Check if valid AND within reasonable range
-      if (!isNaN(timestamp) && timestamp > 0 && timestamp < 8640000000000000) {
-        return date.toISOString();
-      }
-      console.warn('[toISOString] Invalid or out-of-range Date:', date);
-      return fallback;
-    }
-
-    // Try to convert if it's an object with date-like properties
-    if (typeof date === 'object' && date !== null) {
-      const dateObj = new Date(date);
-      const timestamp = dateObj.getTime();
-      if (!isNaN(timestamp) && timestamp > 0 && timestamp < 8640000000000000) {
-        return dateObj.toISOString();
-      }
-    }
-  } catch (error) {
-    console.warn('[toISOString] Error converting date:', date, error);
-  }
-
-  return fallback;
-};
+import { logger, toISOString, handleError } from '@/utils';
 
 // =====================================================
 // TYPES
@@ -197,8 +148,13 @@ export const getMealLogsByDate = async (userId: string, date: Date): Promise<Mea
       fats_g: log.fats_g ? parseFloat(log.fats_g as any) : null,
     }));
   } catch (error) {
-    logger.error('Error getting meal logs:', error);
-    throw error;
+    handleError(error, {
+      message: 'Failed to load meals',
+      description: 'Unable to load your meals for this date',
+      showToast: true,
+      context: 'NutritionService.getMealLogsByDate',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -242,7 +198,12 @@ export const createMealLog = async (data: CreateMealLogData): Promise<MealLog> =
       fats_g: newLog.fats_g ? parseFloat(newLog.fats_g as any) : null,
     };
   } catch (error) {
-    logger.error('Error creating meal log:', error);
+    handleError(error, {
+      message: 'Failed to log meal',
+      description: 'Could not save your meal',
+      showToast: true,
+      context: 'NutritionService.createMealLog',
+    });
     throw error;
   }
 };
@@ -276,7 +237,12 @@ export const deleteMealLog = async (logId: string, userId: string): Promise<void
       -(parseFloat(log.fats_g as any) || 0)
     );
   } catch (error) {
-    logger.error('Error deleting meal log:', error);
+    handleError(error, {
+      message: 'Failed to delete meal',
+      description: 'Could not delete your meal log',
+      showToast: true,
+      context: 'NutritionService.deleteMealLog',
+    });
     throw error;
   }
 };
@@ -306,11 +272,6 @@ export const getDailyNutritionLog = async (userId: string, date: Date): Promise<
 
     if (existingLog.length > 0) {
       const log = existingLog[0];
-      console.log('[getDailyNutritionLog] Raw log:', {
-        log_date: log.log_date,
-        log_date_type: typeof log.log_date,
-        log_date_instanceof: log.log_date instanceof Date,
-      });
       return {
         ...log,
         log_date: toISOString(log.log_date, dateStr),
@@ -341,7 +302,12 @@ export const getDailyNutritionLog = async (userId: string, date: Date): Promise<
       updated_at: toISOString(newLog.updated_at),
     };
   } catch (error) {
-    logger.error('Error getting daily nutrition log:', error);
+    handleError(error, {
+      message: 'Failed to load nutrition data',
+      description: 'Unable to load daily nutrition log',
+      showToast: true,
+      context: 'NutritionService.getDailyNutritionLog',
+    });
     throw error;
   }
 };
@@ -371,7 +337,7 @@ const updateDailyNutritionLog = async (
         protein_g: sql`${dailyNutritionLogs.protein_g} + ${proteinDelta}`,
         carbs_g: sql`${dailyNutritionLogs.carbs_g} + ${carbsDelta}`,
         fats_g: sql`${dailyNutritionLogs.fats_g} + ${fatsDelta}`,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(
         and(
@@ -380,7 +346,11 @@ const updateDailyNutritionLog = async (
         )
       );
   } catch (error) {
-    logger.error('Error updating daily nutrition log:', error);
+    handleError(error, {
+      message: 'Failed to update nutrition data',
+      showToast: false, // Internal function
+      context: 'NutritionService.updateDailyNutritionLog',
+    });
     throw error;
   }
 };
@@ -414,7 +384,7 @@ export const setNutritionTargets = async (
         carbs_target: targets.carbs !== undefined ? targets.carbs : sql`${dailyNutritionLogs.carbs_target}`,
         fats_target: targets.fats !== undefined ? targets.fats : sql`${dailyNutritionLogs.fats_target}`,
         water_target: targets.water !== undefined ? targets.water : sql`${dailyNutritionLogs.water_target}`,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(
         and(
@@ -423,7 +393,12 @@ export const setNutritionTargets = async (
         )
       );
   } catch (error) {
-    logger.error('Error setting nutrition targets:', error);
+    handleError(error, {
+      message: 'Failed to set targets',
+      description: 'Could not update your nutrition targets',
+      showToast: true,
+      context: 'NutritionService.setNutritionTargets',
+    });
     throw error;
   }
 };
@@ -453,7 +428,7 @@ export const addWaterLog = async (userId: string, amountMl: number): Promise<Wat
       .set({
         water_ml: sql`${dailyNutritionLogs.water_ml} + ${amountMl}`,
         water_glasses: sql`${dailyNutritionLogs.water_glasses} + ${Math.floor(amountMl / 250)}`,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(
         and(
@@ -467,7 +442,12 @@ export const addWaterLog = async (userId: string, amountMl: number): Promise<Wat
       logged_at: toISOString(newLog.logged_at),
     };
   } catch (error) {
-    logger.error('Error adding water log:', error);
+    handleError(error, {
+      message: 'Failed to log water',
+      description: 'Could not save water intake',
+      showToast: true,
+      context: 'NutritionService.addWaterLog',
+    });
     throw error;
   }
 };
@@ -500,8 +480,13 @@ export const getTodayWaterLogs = async (userId: string): Promise<WaterLog[]> => 
       logged_at: toISOString(log.logged_at),
     }));
   } catch (error) {
-    logger.error('Error getting water logs:', error);
-    throw error;
+    handleError(error, {
+      message: 'Failed to load water logs',
+      description: 'Unable to load your water intake',
+      showToast: true,
+      context: 'NutritionService.getTodayWaterLogs',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -549,8 +534,13 @@ export const getRecipes = async (filters?: {
       average_rating: recipe.average_rating?.toString() || '0',
     }));
   } catch (error) {
-    logger.error('Error getting recipes:', error);
-    throw error;
+    handleError(error, {
+      message: 'Failed to load recipes',
+      description: 'Unable to load recipe library',
+      showToast: true,
+      context: 'NutritionService.getRecipes',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -574,8 +564,13 @@ export const getRecipeById = async (recipeId: string): Promise<Recipe | null> =>
       average_rating: recipe.average_rating?.toString() || '0',
     };
   } catch (error) {
-    logger.error('Error getting recipe:', error);
-    throw error;
+    handleError(error, {
+      message: 'Failed to load recipe',
+      description: 'Unable to load recipe details',
+      showToast: true,
+      context: 'NutritionService.getRecipeById',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -610,8 +605,13 @@ export const getActiveNutritionPlan = async (userId: string): Promise<NutritionP
       updated_at: toISOString(plan.updated_at),
     };
   } catch (error) {
-    logger.error('Error getting active nutrition plan:', error);
-    throw error;
+    handleError(error, {
+      message: 'Failed to load nutrition plan',
+      description: 'Unable to load your nutrition plan',
+      showToast: true,
+      context: 'NutritionService.getActiveNutritionPlan',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -633,7 +633,7 @@ export const createNutritionPlan = async (data: {
     // Deactivate all existing plans
     await db
       .update(nutritionPlans)
-      .set({ is_active: false, updated_at: new Date() })
+      .set({ is_active: false, updated_at: toISOString(new Date()) })
       .where(eq(nutritionPlans.user_id, data.user_id));
 
     // Create new plan
@@ -661,7 +661,12 @@ export const createNutritionPlan = async (data: {
       updated_at: toISOString(newPlan.updated_at),
     };
   } catch (error) {
-    logger.error('Error creating nutrition plan:', error);
+    handleError(error, {
+      message: 'Failed to create nutrition plan',
+      description: 'Could not save your nutrition plan',
+      showToast: true,
+      context: 'NutritionService.createNutritionPlan',
+    });
     throw error;
   }
 };

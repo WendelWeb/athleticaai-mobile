@@ -10,56 +10,7 @@
 
 import { db, posts, postLikes, postComments, challenges, challengeParticipants, leaderboardEntries, userFollows, profiles } from '@/db';
 import { eq, desc, and, sql, asc, gte, lte } from 'drizzle-orm';
-import { logger } from '@/utils/logger';
-
-// =====================================================
-// HELPERS
-// =====================================================
-
-/**
- * Convert date to ISO string (handles both Date objects and strings from Neon)
- * ROBUST version that handles ALL edge cases including invalid dates
- */
-const toISOString = (date: any, fallback: string = new Date().toISOString()): string => {
-  // Null/undefined check
-  if (!date) return fallback;
-
-  try {
-    // Already a valid ISO string from Neon
-    if (typeof date === 'string') {
-      // Validate it's a parseable date string
-      const testDate = new Date(date);
-      if (!isNaN(testDate.getTime())) {
-        return date;
-      }
-      return fallback;
-    }
-
-    // Date object
-    if (date instanceof Date) {
-      const timestamp = date.getTime();
-      // Check if valid AND within reasonable range
-      if (!isNaN(timestamp) && timestamp > 0 && timestamp < 8640000000000000) {
-        return date.toISOString();
-      }
-      console.warn('[toISOString] Invalid or out-of-range Date:', date);
-      return fallback;
-    }
-
-    // Try to convert if it's an object with date-like properties
-    if (typeof date === 'object' && date !== null) {
-      const dateObj = new Date(date);
-      const timestamp = dateObj.getTime();
-      if (!isNaN(timestamp) && timestamp > 0 && timestamp < 8640000000000000) {
-        return dateObj.toISOString();
-      }
-    }
-  } catch (error) {
-    console.warn('[toISOString] Error converting date:', date, error);
-  }
-
-  return fallback;
-};
+import { logger, toISOString, handleError } from '@/utils';
 
 // =====================================================
 // TYPES
@@ -194,7 +145,7 @@ export const getFeedPosts = async (userId?: string, limit = 20, offset = 0): Pro
 
     return postsData.map(({ post, user }: any, index: number) => {
       if (index === 0) {
-        console.log('[getFeedPosts] First post raw:', {
+        logger.debug('[Community] First post fetched', {
           created_at: post.created_at,
           created_at_type: typeof post.created_at,
           created_at_instanceof: post.created_at instanceof Date,
@@ -209,8 +160,13 @@ export const getFeedPosts = async (userId?: string, limit = 20, offset = 0): Pro
       };
     });
   } catch (error) {
-    logger.error('Error getting feed posts:', error);
-    throw error;
+    handleError(error, {
+      message: 'Failed to load community feed',
+      description: 'Unable to load posts',
+      showToast: true,
+      context: 'CommunityService.getFeedPosts',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -256,8 +212,13 @@ export const getPostById = async (postId: string, userId?: string): Promise<Post
       is_liked: isLiked,
     };
   } catch (error) {
-    logger.error('Error getting post:', error);
-    throw error;
+    handleError(error, {
+      message: 'Failed to load post',
+      description: 'Unable to load post details',
+      showToast: true,
+      context: 'CommunityService.getPostById',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -288,8 +249,13 @@ export const createPost = async (data: CreatePostData): Promise<Post> => {
       updated_at: toISOString(newPost.updated_at),
     };
   } catch (error) {
-    logger.error('Error creating post:', error);
-    throw error;
+    handleError(error, {
+      message: 'Failed to create post',
+      description: 'Could not publish your post',
+      showToast: true,
+      context: 'CommunityService.createPost',
+    });
+    throw error; // Re-throw so caller knows it failed
   }
 };
 
@@ -303,7 +269,12 @@ export const deletePost = async (postId: string, userId: string): Promise<void> 
       .delete(posts)
       .where(and(eq(posts.id, postId), eq(posts.user_id, userId)));
   } catch (error) {
-    logger.error('Error deleting post:', error);
+    handleError(error, {
+      message: 'Failed to delete post',
+      description: 'Could not delete your post',
+      showToast: true,
+      context: 'CommunityService.deletePost',
+    });
     throw error;
   }
 };
@@ -353,7 +324,12 @@ export const togglePostLike = async (postId: string, userId: string): Promise<{ 
       return { isLiked: true, likesCount: updated?.likes_count || 0 };
     }
   } catch (error) {
-    logger.error('Error toggling post like:', error);
+    handleError(error, {
+      message: 'Failed to like post',
+      description: 'Could not update post like',
+      showToast: false, // Silent failure for likes
+      context: 'CommunityService.togglePostLike',
+    });
     throw error;
   }
 };
@@ -375,7 +351,12 @@ export const addComment = async (postId: string, userId: string, content: string
       .set({ comments_count: sql`${posts.comments_count} + 1` })
       .where(eq(posts.id, postId));
   } catch (error) {
-    logger.error('Error adding comment:', error);
+    handleError(error, {
+      message: 'Failed to add comment',
+      description: 'Could not post your comment',
+      showToast: true,
+      context: 'CommunityService.addComment',
+    });
     throw error;
   }
 };
@@ -433,8 +414,13 @@ export const getActiveChallenges = async (userId?: string): Promise<Challenge[]>
       created_at: toISOString(challenge.created_at),
     }));
   } catch (error) {
-    logger.error('Error getting active challenges:', error);
-    throw error;
+    handleError(error, {
+      message: 'Failed to load challenges',
+      description: 'Unable to load active challenges',
+      showToast: true,
+      context: 'CommunityService.getActiveChallenges',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -467,7 +453,12 @@ export const joinChallenge = async (challengeId: string, userId: string): Promis
       .set({ participants_count: sql`${challenges.participants_count} + 1` })
       .where(eq(challenges.id, challengeId));
   } catch (error) {
-    logger.error('Error joining challenge:', error);
+    handleError(error, {
+      message: 'Failed to join challenge',
+      description: 'Could not join this challenge',
+      showToast: true,
+      context: 'CommunityService.joinChallenge',
+    });
     throw error;
   }
 };
@@ -497,7 +488,7 @@ export const updateChallengeProgress = async (
         progress,
         is_completed: isCompleted,
         completed_at: isCompleted ? new Date() : null,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(
         and(
@@ -506,7 +497,12 @@ export const updateChallengeProgress = async (
         )
       );
   } catch (error) {
-    logger.error('Error updating challenge progress:', error);
+    handleError(error, {
+      message: 'Failed to update challenge',
+      description: 'Could not update challenge progress',
+      showToast: false, // Silent - progress updates happen frequently
+      context: 'CommunityService.updateChallengeProgress',
+    });
     throw error;
   }
 };
@@ -556,8 +552,13 @@ export const getLeaderboard = async (
       };
     });
   } catch (error) {
-    logger.error('Error getting leaderboard:', error);
-    throw error;
+    handleError(error, {
+      message: 'Failed to load leaderboard',
+      description: 'Unable to load rankings',
+      showToast: true,
+      context: 'CommunityService.getLeaderboard',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -608,8 +609,13 @@ export const getUserLeaderboardPosition = async (
       trend,
     };
   } catch (error) {
-    logger.error('Error getting user leaderboard position:', error);
-    throw error;
+    handleError(error, {
+      message: 'Failed to load leaderboard position',
+      description: 'Unable to load your ranking',
+      showToast: true,
+      context: 'CommunityService.getUserLeaderboardPosition',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -627,7 +633,12 @@ export const followUser = async (followerId: string, followingId: string): Promi
       following_id: followingId,
     });
   } catch (error) {
-    logger.error('Error following user:', error);
+    handleError(error, {
+      message: 'Failed to follow user',
+      description: 'Could not follow this user',
+      showToast: true,
+      context: 'CommunityService.followUser',
+    });
     throw error;
   }
 };
@@ -646,7 +657,12 @@ export const unfollowUser = async (followerId: string, followingId: string): Pro
         )
       );
   } catch (error) {
-    logger.error('Error unfollowing user:', error);
+    handleError(error, {
+      message: 'Failed to unfollow user',
+      description: 'Could not unfollow this user',
+      showToast: true,
+      context: 'CommunityService.unfollowUser',
+    });
     throw error;
   }
 };
@@ -669,8 +685,13 @@ export const isFollowing = async (followerId: string, followingId: string): Prom
 
     return result.length > 0;
   } catch (error) {
-    logger.error('Error checking if following:', error);
-    throw error;
+    handleError(error, {
+      message: 'Failed to check follow status',
+      description: 'Could not check if you follow this user',
+      showToast: false, // Silent - non-critical
+      context: 'CommunityService.isFollowing',
+    });
+    return false;
   }
 };
 
@@ -686,7 +707,11 @@ export const getFollowersCount = async (userId: string): Promise<number> => {
 
     return result[0]?.count || 0;
   } catch (error) {
-    logger.error('Error getting followers count:', error);
+    handleError(error, {
+      message: 'Failed to get followers count',
+      showToast: false,
+      context: 'CommunityService.getFollowersCount',
+    });
     return 0;
   }
 };
@@ -703,7 +728,11 @@ export const getFollowingCount = async (userId: string): Promise<number> => {
 
     return result[0]?.count || 0;
   } catch (error) {
-    logger.error('Error getting following count:', error);
+    handleError(error, {
+      message: 'Failed to get following count',
+      showToast: false,
+      context: 'CommunityService.getFollowingCount',
+    });
     return 0;
   }
 };

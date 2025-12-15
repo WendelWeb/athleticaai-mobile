@@ -13,6 +13,8 @@
 
 import { db, userWorkoutSessions, workouts } from '@/db';
 import { eq, and, desc, gte, lte } from 'drizzle-orm';
+import { logger, toISOString } from '@/utils';
+import { handleError } from '@/utils/errorHandler';
 
 // =====================================================
 // INTERFACES (re-export from Supabase service)
@@ -97,9 +99,11 @@ export async function getUserStats(userId: string): Promise<UserStats | null> {
 
     // Calculate streaks
     const { current_streak, best_streak } = calculateStreaks(
-      sessions.map((s: typeof sessions[0]) => ({
-        completed_at: s.completed_at?.toISOString() || new Date().toISOString(),
-      }))
+      sessions
+        .filter((s: typeof sessions[0]) => s.completed_at !== null)
+        .map((s: typeof sessions[0]) => ({
+          completed_at: toISOString(s.completed_at, new Date().toISOString()),
+        }))
     );
 
     // Calculate XP (5 XP per minute of workout)
@@ -137,8 +141,13 @@ export async function getUserStats(userId: string): Promise<UserStats | null> {
       workouts_this_month,
     };
   } catch (error) {
-    console.error('Error fetching user stats:', error);
-    return null;
+    handleError(error, {
+      message: 'Failed to load stats',
+      description: 'Unable to load your workout statistics',
+      showToast: true,
+      context: 'StatsService.getUserStats',
+    });
+    throw error; // Let React Query handle error state
   }
 }
 
@@ -313,8 +322,13 @@ export async function getWeeklyActivity(userId: string): Promise<WeeklyActivity[
 
     return result;
   } catch (error) {
-    console.error('Error fetching weekly activity:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to load weekly activity',
+      description: 'Unable to load your activity data',
+      showToast: true,
+      context: 'StatsService.getWeeklyActivity',
+    });
+    throw error; // Let React Query handle error state
   }
 }
 
@@ -375,8 +389,13 @@ export async function getPersonalRecords(userId: string): Promise<PersonalRecord
 
     return records;
   } catch (error) {
-    console.error('Error fetching personal records:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to load personal records',
+      description: 'Unable to load your achievements',
+      showToast: true,
+      context: 'StatsService.getPersonalRecords',
+    });
+    throw error; // Let React Query handle error state
   }
 }
 
@@ -452,8 +471,13 @@ export async function getUserWorkoutsByDate(
         notes: s.session.notes,
       }));
   } catch (error) {
-    console.error('Error fetching workouts by date:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to load workouts',
+      description: 'Unable to load workouts for this date',
+      showToast: true,
+      context: 'StatsService.getWorkoutsByDate',
+    });
+    throw error; // Let React Query handle error state
   }
 }
 
@@ -500,8 +524,13 @@ export async function getUserWorkoutsByMonth(
 
     return dateCount;
   } catch (error) {
-    console.error('Error fetching workouts by month:', error);
-    return {};
+    handleError(error, {
+      message: 'Failed to load monthly workouts',
+      description: 'Unable to load workout calendar',
+      showToast: true,
+      context: 'StatsService.getWorkoutsByMonth',
+    });
+    throw error; // Let React Query handle error state
   }
 }
 
@@ -557,7 +586,12 @@ export async function getUserWorkoutHistory(
         notes: s.session.notes,
       }));
   } catch (error) {
-    console.error('Error fetching workout history:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to load workout history',
+      description: 'Unable to load your workout history',
+      showToast: true,
+      context: 'StatsService.getWorkoutHistory',
+    });
+    throw error; // Let React Query handle error state
   }
 }

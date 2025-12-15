@@ -11,38 +11,11 @@
 import { db } from '@/db';
 import { userPrograms, workoutPrograms } from '@/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
+import { logger, toISOString } from '@/utils';
+import { handleError } from '@/utils/errorHandler';
 
-// =====================================================
-// HELPERS
-// =====================================================
-
-/**
- * Safely convert a date value to ISO string
- * Handles: Date objects, strings, timestamps, null, undefined
- */
-const toISOStringSafe = (value: any): string | null => {
-  if (!value) return null;
-
-  try {
-    // If already a valid ISO string, return it
-    if (typeof value === 'string' && value.includes('T')) {
-      return new Date(value).toISOString();
-    }
-
-    // If it's a Date object or timestamp, convert
-    const date = new Date(value);
-
-    // Check if date is valid
-    if (isNaN(date.getTime())) {
-      return null;
-    }
-
-    return date.toISOString();
-  } catch (error) {
-    console.warn('Failed to convert date to ISO string:', value, error);
-    return null;
-  }
-};
+// Helper wrapper for optional dates (returns null instead of current date)
+const toISOStringSafe = (value: any): string | null => toISOString(value, null);
 
 // =====================================================
 // TYPES
@@ -125,7 +98,10 @@ export const isUserEnrolled = async (userId: string, programId: string): Promise
 
     return result.length > 0;
   } catch (error) {
-    console.error('Error checking enrollment:', error);
+    handleError(error, {
+      message: 'Failed to check enrollment',
+      context: 'UserPrograms.isUserEnrolled',
+    });
     return false;
   }
 };
@@ -164,8 +140,13 @@ export const getUserProgram = async (
       completion_percentage: program.completion_percentage?.toString() || '0',
     } as UserProgram;
   } catch (error) {
-    console.error('Error getting user program:', error);
-    return null;
+    handleError(error, {
+      message: 'Failed to get program',
+      description: 'Unable to load program details',
+      showToast: true,
+      context: 'UserPrograms.getUserProgram',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -173,9 +154,8 @@ export const getUserProgram = async (
  * Enroll user in a program (Start Program)
  */
 export const enrollInProgram = async (input: EnrollProgramInput): Promise<UserProgram | null> => {
+  const { userId, programId, totalWorkouts } = input;
   try {
-    const { userId, programId, totalWorkouts } = input;
-
     // Check if already enrolled
     const existing = await getUserProgram(userId, programId);
     if (existing) {
@@ -194,14 +174,14 @@ export const enrollInProgram = async (input: EnrollProgramInput): Promise<UserPr
         program_id: programId,
         status: 'active',
         is_saved: false,
-        started_at: new Date(),
+        started_at: toISOString(new Date()),
         current_week: 1,
         current_workout_index: 0,
         workouts_completed: 0,
         total_workouts: totalWorkouts,
         completion_percentage: '0',
-        created_at: new Date(),
-        updated_at: new Date(),
+        created_at: toISOString(new Date()),
+        updated_at: toISOString(new Date()),
       })
       .returning();
 
@@ -216,8 +196,13 @@ export const enrollInProgram = async (input: EnrollProgramInput): Promise<UserPr
       completion_percentage: program.completion_percentage?.toString() || '0',
     } as UserProgram;
   } catch (error) {
-    console.error('Error enrolling in program:', error);
-    return null;
+    handleError(error, {
+      message: 'Failed to start program',
+      description: 'Could not enroll in program',
+      showToast: true,
+      context: 'UserPrograms.enrollInProgram',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -225,8 +210,8 @@ export const enrollInProgram = async (input: EnrollProgramInput): Promise<UserPr
  * Save/bookmark a program for later
  */
 export const saveProgram = async (input: SaveProgramInput): Promise<UserProgram | null> => {
+  const { userId, programId } = input;
   try {
-    const { userId, programId } = input;
 
     // Check if already enrolled/saved
     const existing = await getUserProgram(userId, programId);
@@ -259,8 +244,8 @@ export const saveProgram = async (input: SaveProgramInput): Promise<UserProgram 
         workouts_completed: 0,
         total_workouts: programData[0].total_workouts,
         completion_percentage: '0',
-        created_at: new Date(),
-        updated_at: new Date(),
+        created_at: toISOString(new Date()),
+        updated_at: toISOString(new Date()),
       })
       .returning();
 
@@ -275,8 +260,13 @@ export const saveProgram = async (input: SaveProgramInput): Promise<UserProgram 
       completion_percentage: program.completion_percentage?.toString() || '0',
     } as UserProgram;
   } catch (error) {
-    console.error('Error saving program:', error);
-    return null;
+    handleError(error, {
+      message: 'Failed to save program',
+      description: 'Could not bookmark program',
+      showToast: true,
+      context: 'UserPrograms.saveProgram',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -303,7 +293,7 @@ export const toggleSaved = async (userProgramId: string): Promise<UserProgram | 
       .update(userPrograms)
       .set({
         is_saved: newSavedStatus,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(eq(userPrograms.id, userProgramId))
       .returning();
@@ -319,8 +309,12 @@ export const toggleSaved = async (userProgramId: string): Promise<UserProgram | 
       completion_percentage: program.completion_percentage?.toString() || '0',
     } as UserProgram;
   } catch (error) {
-    console.error('Error toggling saved:', error);
-    return null;
+    handleError(error, {
+      message: 'Failed to update bookmark',
+      showToast: true,
+      context: 'UserPrograms.toggleSaved',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -334,7 +328,7 @@ export const updateProgramStatus = async (
   try {
     const updateData: any = {
       status,
-      updated_at: new Date(),
+      updated_at: toISOString(new Date()),
     };
 
     // Set timestamps based on status
@@ -364,8 +358,12 @@ export const updateProgramStatus = async (
       completion_percentage: program.completion_percentage?.toString() || '0',
     } as UserProgram;
   } catch (error) {
-    console.error('Error updating program status:', error);
-    return null;
+    handleError(error, {
+      message: 'Failed to update program status',
+      showToast: true,
+      context: 'UserPrograms.updateProgramStatus',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -375,8 +373,8 @@ export const updateProgramStatus = async (
 export const updateProgramProgress = async (
   input: UpdateProgressInput
 ): Promise<UserProgram | null> => {
+  const { userProgramId, workoutsCompleted, currentWeek, currentWorkoutIndex } = input;
   try {
-    const { userProgramId, workoutsCompleted, currentWeek, currentWorkoutIndex } = input;
 
     // Get current program to calculate percentage
     const current = await db
@@ -394,7 +392,7 @@ export const updateProgramProgress = async (
     const percentage = ((completed / totalWorkouts) * 100).toFixed(2);
 
     const updateData: any = {
-      updated_at: new Date(),
+      updated_at: toISOString(new Date()),
       completion_percentage: percentage,
     };
 
@@ -432,8 +430,13 @@ export const updateProgramProgress = async (
       completion_percentage: program.completion_percentage?.toString() || '0',
     } as UserProgram;
   } catch (error) {
-    console.error('Error updating program progress:', error);
-    return null;
+    handleError(error, {
+      message: 'Failed to update progress',
+      description: 'Your progress could not be saved',
+      showToast: true,
+      context: 'UserPrograms.updateProgramProgress',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -458,8 +461,13 @@ export const getUserPrograms = async (userId: string): Promise<UserProgram[]> =>
       completion_percentage: program.completion_percentage?.toString() || '0',
     })) as UserProgram[];
   } catch (error) {
-    console.error('Error getting user programs:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to load programs',
+      description: 'Unable to load your programs',
+      showToast: true,
+      context: 'UserPrograms.getUserPrograms',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -489,8 +497,13 @@ export const getSavedPrograms = async (userId: string): Promise<UserProgram[]> =
       completion_percentage: program.completion_percentage?.toString() || '0',
     })) as UserProgram[];
   } catch (error) {
-    console.error('Error getting saved programs:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to load saved programs',
+      description: 'Unable to load bookmarked programs',
+      showToast: true,
+      context: 'UserPrograms.getSavedPrograms',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -502,8 +515,13 @@ export const deleteUserProgram = async (userProgramId: string): Promise<boolean>
     await db.delete(userPrograms).where(eq(userPrograms.id, userProgramId));
     return true;
   } catch (error) {
-    console.error('Error deleting user program:', error);
-    return false;
+    handleError(error, {
+      message: 'Failed to delete program',
+      description: 'Could not remove program',
+      showToast: true,
+      context: 'UserPrograms.deleteUserProgram',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -525,7 +543,7 @@ export const setPrimaryProgram = async (
       .update(userPrograms)
       .set({
         is_primary: false,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(eq(userPrograms.user_id, userId));
 
@@ -534,15 +552,19 @@ export const setPrimaryProgram = async (
       .update(userPrograms)
       .set({
         is_primary: true,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(eq(userPrograms.id, userProgramId));
 
-    console.log(`✅ Primary program set:`, userProgramId);
+    logger.debug('[UserPrograms] Primary program set', { userProgramId });
     return true;
   } catch (error) {
-    console.error('Error setting primary program:', error);
-    return false;
+    handleError(error, {
+      message: 'Failed to set primary program',
+      showToast: true,
+      context: 'UserPrograms.setPrimaryProgram',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -577,7 +599,11 @@ export const getPrimaryProgram = async (userId: string): Promise<UserProgram | n
       completion_percentage: program.completion_percentage?.toString() || '0',
     } as UserProgram;
   } catch (error) {
-    console.error('Error getting primary program:', error);
+    handleError(error, {
+      message: 'Failed to get primary program',
+      context: 'UserPrograms.getPrimaryProgram',
+      // No toast - internal function
+    });
     return null;
   }
 };
@@ -596,7 +622,7 @@ export const pauseProgram = async (
         status: 'paused',
         paused_at: new Date(),
         paused_reason: reason || null,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(eq(userPrograms.id, userProgramId))
       .returning();
@@ -614,8 +640,12 @@ export const pauseProgram = async (
       completion_percentage: program.completion_percentage?.toString() || '0',
     } as UserProgram;
   } catch (error) {
-    console.error('Error pausing program:', error);
-    return null;
+    handleError(error, {
+      message: 'Failed to pause program',
+      showToast: true,
+      context: 'UserPrograms.pauseProgram',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -630,7 +660,7 @@ export const resumeProgram = async (userProgramId: string): Promise<UserProgram 
         status: 'active',
         paused_at: null,
         paused_reason: null,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(eq(userPrograms.id, userProgramId))
       .returning();
@@ -648,8 +678,12 @@ export const resumeProgram = async (userProgramId: string): Promise<UserProgram 
       completion_percentage: program.completion_percentage?.toString() || '0',
     } as UserProgram;
   } catch (error) {
-    console.error('Error resuming program:', error);
-    return null;
+    handleError(error, {
+      message: 'Failed to resume program',
+      showToast: true,
+      context: 'UserPrograms.resumeProgram',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -670,13 +704,13 @@ export const restartProgram = async (userProgramId: string): Promise<UserProgram
         daily_workouts_completed: 0,
         weekly_workouts_completed: 0,
         completion_percentage: '0',
-        started_at: new Date(),
+        started_at: toISOString(new Date()),
         completed_at: null,
         paused_at: null,
         paused_reason: null,
         last_workout_date: today,
         current_week_start_date: today,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(eq(userPrograms.id, userProgramId))
       .returning();
@@ -694,8 +728,12 @@ export const restartProgram = async (userProgramId: string): Promise<UserProgram
       completion_percentage: program.completion_percentage?.toString() || '0',
     } as UserProgram;
   } catch (error) {
-    console.error('Error restarting program:', error);
-    return null;
+    handleError(error, {
+      message: 'Failed to restart program',
+      showToast: true,
+      context: 'UserPrograms.restartProgram',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -711,15 +749,19 @@ export const setDailyTarget = async (
       .update(userPrograms)
       .set({
         daily_workouts_target: targetWorkouts,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(eq(userPrograms.id, userProgramId));
 
-    console.log(`✅ Daily target set: ${targetWorkouts} workouts/day`);
+    logger.debug('[UserPrograms] Daily target set', { targetWorkouts });
     return true;
   } catch (error) {
-    console.error('Error setting daily target:', error);
-    return false;
+    handleError(error, {
+      message: 'Failed to set daily target',
+      showToast: true,
+      context: 'UserPrograms.setDailyTarget',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -740,7 +782,11 @@ export const getActiveProgramsCount = async (userId: string): Promise<number> =>
 
     return result.length;
   } catch (error) {
-    console.error('Error getting active programs count:', error);
+    handleError(error, {
+      message: 'Failed to get active programs count',
+      context: 'UserPrograms.getActiveProgramsCount',
+      // No toast - internal function
+    });
     return 0;
   }
 };

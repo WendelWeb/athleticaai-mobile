@@ -26,6 +26,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { useStyledTheme } from '@theme/ThemeProvider';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { useClerkAuth } from '@/hooks/useClerkAuth';
 import { getUserAchievements, getAchievementStats, type UnlockedAchievement, type AchievementStats } from '@/services/drizzle/achievements';
 import { AchievementEngine } from '@/services/achievements/AchievementEngine';
@@ -47,6 +48,7 @@ export default function AchievementsScreen() {
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   // Theme colors
   const bgColors = {
@@ -70,6 +72,7 @@ export default function AchievementsScreen() {
     try {
       if (isRefresh) setRefreshing(true);
       else setLoading(true);
+      setError(null);
 
       const [achievementsData, statsData] = await Promise.all([
         getUserAchievements(profile.id),
@@ -85,6 +88,7 @@ export default function AchievementsScreen() {
       });
     } catch (err) {
       logger.error('[Achievements] Failed to fetch', err instanceof Error ? err : undefined);
+      setError(err instanceof Error ? err : new Error('Failed to load achievements'));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -372,9 +376,18 @@ export default function AchievementsScreen() {
           />
         }
       >
-        {renderStats()}
-        {renderFilters()}
-        {renderAchievementGrid()}
+        {error ? (
+          <ErrorState
+            error={error}
+            onRetry={() => fetchAchievements(true)}
+          />
+        ) : (
+          <>
+            {renderStats()}
+            {renderFilters()}
+            {renderAchievementGrid()}
+          </>
+        )}
       </ScrollView>
     </View>
   );

@@ -9,7 +9,7 @@
 
 import { db, userPrograms } from '@/db';
 import { eq, and, or, sql, lt } from 'drizzle-orm';
-import { logger } from '@/utils/logger';
+import { logger, handleError, toISOString } from '@/utils';
 
 /**
  * Check if we need to reset daily/weekly progress for a user's programs
@@ -54,7 +54,7 @@ export async function checkAndResetProgress(userId: string): Promise<void> {
 
       if (needsDailyReset || needsWeeklyReset) {
         const updates: any = {
-          updated_at: new Date(),
+          updated_at: toISOString(new Date()),
         };
 
         // Reset daily counter if day changed
@@ -90,11 +90,13 @@ export async function checkAndResetProgress(userId: string): Promise<void> {
       programsChecked: activePrograms.length
     });
   } catch (error) {
-    logger.error('[DailyReset] Failed to check/reset progress',
-      error instanceof Error ? error : undefined,
-      { userId }
-    );
-    throw error;
+    handleError(error, {
+      message: 'Failed to reset progress',
+      description: 'Unable to check daily/weekly progress',
+      showToast: false, // Silent - happens automatically in background
+      context: 'DailyReset.checkAndResetProgress',
+    });
+    // Don't throw - this runs in background, failures shouldn't block app
   }
 }
 
@@ -116,7 +118,7 @@ export async function resetAllDailyProgress(): Promise<{ affected: number }> {
       .update(userPrograms)
       .set({
         daily_workouts_completed: 0,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(
         and(
@@ -138,10 +140,13 @@ export async function resetAllDailyProgress(): Promise<{ affected: number }> {
 
     return { affected: result.rowCount || 0 };
   } catch (error) {
-    logger.error('[DailyReset] Failed global daily reset',
-      error instanceof Error ? error : undefined
-    );
-    throw error;
+    handleError(error, {
+      message: 'Failed to reset daily progress',
+      description: 'Global daily reset failed',
+      showToast: false, // Silent - background job
+      context: 'DailyReset.resetAllDailyProgress',
+    });
+    return { affected: 0 }; // Return fallback instead of throwing
   }
 }
 
@@ -161,7 +166,7 @@ export async function resetAllWeeklyProgress(): Promise<{ affected: number }> {
       .set({
         weekly_workouts_completed: 0,
         current_week_start_date: weekStart,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(
         and(
@@ -183,10 +188,13 @@ export async function resetAllWeeklyProgress(): Promise<{ affected: number }> {
 
     return { affected: result.rowCount || 0 };
   } catch (error) {
-    logger.error('[DailyReset] Failed global weekly reset',
-      error instanceof Error ? error : undefined
-    );
-    throw error;
+    handleError(error, {
+      message: 'Failed to reset weekly progress',
+      description: 'Global weekly reset failed',
+      showToast: false, // Silent - background job
+      context: 'DailyReset.resetAllWeeklyProgress',
+    });
+    return { affected: 0 }; // Return fallback instead of throwing
   }
 }
 
@@ -211,7 +219,7 @@ export async function incrementDailyProgress(
         daily_workouts_completed: sql`${userPrograms.daily_workouts_completed} + 1`,
         weekly_workouts_completed: sql`${userPrograms.weekly_workouts_completed} + 1`,
         last_workout_date: today,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(eq(userPrograms.id, programId));
 
@@ -221,11 +229,13 @@ export async function incrementDailyProgress(
       date: today
     });
   } catch (error) {
-    logger.error('[DailyReset] Failed to increment daily progress',
-      error instanceof Error ? error : undefined,
-      { programId, userId }
-    );
-    throw error;
+    handleError(error, {
+      message: 'Failed to update progress',
+      description: 'Unable to increment daily progress counter',
+      showToast: true, // Show error - user-triggered action
+      context: 'DailyReset.incrementDailyProgress',
+    });
+    // Don't throw - failure to increment shouldn't block workout completion
   }
 }
 
@@ -268,11 +278,13 @@ export async function getDailyProgressStats(userId: string) {
       completed_today: program.last_workout_date === today,
     }));
   } catch (error) {
-    logger.error('[DailyReset] Failed to get daily progress stats',
-      error instanceof Error ? error : undefined,
-      { userId }
-    );
-    throw error;
+    handleError(error, {
+      message: 'Failed to load progress stats',
+      description: 'Unable to load daily progress statistics',
+      showToast: true, // Show error - user-visible feature
+      context: 'DailyReset.getDailyProgressStats',
+    });
+    throw error; // Let React Query handle error state
   }
 }
 

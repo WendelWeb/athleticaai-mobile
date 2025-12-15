@@ -20,12 +20,14 @@ import {
   RefreshControl,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useStyledTheme } from '@theme/ThemeProvider';
 import { Card, Badge } from '@components/ui';
 import { Skeleton } from '@components/ui/Skeleton';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { useClerkAuth } from '@/hooks/useClerkAuth';
 import { useUserStats, useWeeklyActivity } from '@/hooks/useUserStats';
 
@@ -37,8 +39,8 @@ export default function ProgressScreen() {
   const { user } = useClerkAuth();
 
   // INNOVATION: Real stats from Supabase
-  const { stats: userStats, loading: statsLoading, refreshing: statsRefreshing, refresh: refreshStats } = useUserStats();
-  const { weeklyData: rawWeeklyData, loading: weeklyLoading, refresh: refreshWeekly } = useWeeklyActivity();
+  const { stats: userStats, loading: statsLoading, error: statsError, refreshing: statsRefreshing, refresh: refreshStats } = useUserStats();
+  const { weeklyData: rawWeeklyData, loading: weeklyLoading, error: weeklyError, refresh: refreshWeekly } = useWeeklyActivity();
 
   // Transform weekly data to chart format
   const weeklyData = rawWeeklyData.map((activity) => {
@@ -112,19 +114,20 @@ export default function ProgressScreen() {
   };
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: bgColors.primary }]}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          refreshing={statsRefreshing}
-          onRefresh={handleRefresh}
-          tintColor={theme.colors.primary[500]}
-          colors={[theme.colors.primary[500]]}
-        />
-      }
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: bgColors.primary }} edges={['top']}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={statsRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={theme.colors.primary[500]}
+            colors={[theme.colors.primary[500]]}
+          />
+        }
+      >
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -156,7 +159,13 @@ export default function ProgressScreen() {
       </LinearGradient>
 
       {/* Stats Grid */}
-      {statsLoading ? (
+      {statsError ? (
+        <ErrorState
+          error={statsError}
+          onRetry={refreshStats}
+          compact
+        />
+      ) : statsLoading ? (
         // INNOVATION: Skeleton loaders for stats
         <View style={styles.statsGrid}>
           {[...Array(3)].map((_, index) => (
@@ -232,7 +241,13 @@ export default function ProgressScreen() {
         <Text style={[styles.sectionTitle, { color: textColors.primary }]}>
           Weekly Activity
         </Text>
-        {weeklyLoading ? (
+        {weeklyError ? (
+          <ErrorState
+            error={weeklyError}
+            onRetry={refreshWeekly}
+            compact
+          />
+        ) : weeklyLoading ? (
           // INNOVATION: Skeleton loaders for chart
           <View style={styles.chartContainer}>
             {[...Array(7)].map((_, index) => (
@@ -364,7 +379,8 @@ export default function ProgressScreen() {
           </Text>
         </View>
       </Card>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -374,8 +390,8 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 24,
-    paddingTop: 60,
-    paddingBottom: 100,
+    paddingTop: 20, // Minimal top space (immersive mode)
+    paddingBottom: 100, // Safety space to avoid tab bar overlap
   },
   header: {
     marginBottom: 24,

@@ -15,30 +15,7 @@
 import { db, workouts, exercises, userWorkoutSessions, workoutPrograms } from '@/db';
 import { eq, and, or, desc, asc, gte, like, inArray, sql } from 'drizzle-orm';
 import type { Workout, FitnessLevel, WorkoutCategory, EquipmentType, MuscleGroup } from '@/types/workout';
-
-/**
- * Safely convert a value to ISO string
- * Handles invalid dates, null, undefined, and malformed timestamps
- */
-const safeToISOString = (value: any): string | null => {
-  if (!value) return null;
-
-  try {
-    // If it's already a Date object
-    if (value instanceof Date) {
-      // Check if it's a valid date
-      if (isNaN(value.getTime())) return null;
-      return value.toISOString();
-    }
-
-    // If it's a string or number, try to create a Date
-    const date = new Date(value);
-    if (isNaN(date.getTime())) return null;
-    return date.toISOString();
-  } catch (error) {
-    return null;
-  }
-};
+import { handleError, logger, safeToISOString, toISOString } from '@/utils';
 
 // =====================================================
 // INTERFACES (re-export from Supabase service)
@@ -167,15 +144,13 @@ export const getWorkoutPrograms = async (filters?: WorkoutProgramFilters): Promi
 
     const data = await query;
 
-    // DETAILED LOG for debugging
-    console.log(`\n🔥 [WORKOUTS SERVICE] getWorkoutPrograms`);
-    console.log(`📊 Filters:`, filters);
-    console.log(`✅ Fetched ${data.length} programs`);
-    if (data.length > 0) {
-      console.log(`📝 First program: ${data[0].name}`);
-      console.log(`📝 Last program: ${data[data.length - 1].name}`);
-    }
-    console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+    // Debug logging
+    logger.debug('[Workouts] getWorkoutPrograms', {
+      filters,
+      count: data.length,
+      first: data[0]?.name,
+      last: data[data.length - 1]?.name,
+    });
 
     return data.map((program: any) => ({
       ...program,
@@ -185,8 +160,13 @@ export const getWorkoutPrograms = async (filters?: WorkoutProgramFilters): Promi
       average_rating: program.average_rating?.toString() || '0',
     })) as WorkoutProgram[];
   } catch (error) {
-    console.error('❌ Error fetching workout programs:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to load workout programs',
+      description: 'Please check your connection and try again',
+      showToast: true,
+      context: 'WorkoutsService.getWorkoutPrograms',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -209,8 +189,13 @@ export const getPopularWorkoutPrograms = async (limit: number = 5): Promise<Work
       average_rating: program.average_rating?.toString() || '0',
     })) as WorkoutProgram[];
   } catch (error) {
-    console.error('Error fetching popular programs:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to load popular programs',
+      description: 'Unable to load featured programs',
+      showToast: true,
+      context: 'WorkoutsService.getPopularWorkoutPrograms',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -234,8 +219,13 @@ export const getWorkoutProgramById = async (id: string): Promise<WorkoutProgram 
       average_rating: program.average_rating?.toString() || '0',
     } as WorkoutProgram;
   } catch (error) {
-    console.error('Error fetching workout program:', error);
-    return null;
+    handleError(error, {
+      message: 'Failed to load program details',
+      description: 'Please try again',
+      showToast: true,
+      context: 'WorkoutsService.getProgramById',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -265,8 +255,13 @@ export const getWorkoutsByProgramId = async (programId: string): Promise<any[]> 
       created_at: safeToISOString(workout.created_at) || new Date().toISOString(),
     }));
   } catch (error) {
-    console.error('Error fetching program workouts:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to load program workouts',
+      description: 'Unable to load workout schedule',
+      showToast: true,
+      context: 'WorkoutsService.getWorkoutsByProgramId',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -314,8 +309,13 @@ export const getWorkouts = async (filters?: GetWorkoutsFilters): Promise<Workout
     // Transform to app format
     return transformWorkoutsFromDB(data);
   } catch (error) {
-    console.error('Error fetching workouts:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to load workouts',
+      description: 'Unable to load workout list',
+      showToast: true,
+      context: 'WorkoutsService.getWorkouts',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -332,8 +332,13 @@ export const getWorkoutById = async (id: string): Promise<Workout | null> => {
 
     return transformWorkoutFromDB(data[0]);
   } catch (error) {
-    console.error('Error fetching workout:', error);
-    return null;
+    handleError(error, {
+      message: 'Failed to load workout',
+      description: 'Unable to load workout details',
+      showToast: true,
+      context: 'WorkoutsService.getWorkoutById',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -350,8 +355,13 @@ export const getPopularWorkouts = async (limit: number = 5): Promise<Workout[]> 
 
     return transformWorkoutsFromDB(data);
   } catch (error) {
-    console.error('Error fetching popular workouts:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to load popular workouts',
+      description: 'Unable to load featured workouts',
+      showToast: true,
+      context: 'WorkoutsService.getPopularWorkouts',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -377,8 +387,13 @@ export const getRecommendedWorkouts = async (
 
     return transformWorkoutsFromDB(data);
   } catch (error) {
-    console.error('Error fetching recommended workouts:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to load recommendations',
+      description: 'Unable to load recommended workouts',
+      showToast: true,
+      context: 'WorkoutsService.getRecommendedWorkouts',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -433,15 +448,13 @@ export const getExercises = async (filters?: ExerciseFilters): Promise<Exercise[
 
     const data = await query;
 
-    // DETAILED LOG for debugging
-    console.log(`\n🏋️ [WORKOUTS SERVICE] getExercises`);
-    console.log(`📊 Filters:`, filters);
-    console.log(`✅ Fetched ${data.length} exercises`);
-    if (data.length > 0) {
-      console.log(`📝 First exercise: ${data[0].name}`);
-      console.log(`📝 Last exercise: ${data[data.length - 1].name}`);
-    }
-    console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+    // Debug logging
+    logger.debug('[Workouts] getExercises', {
+      filters,
+      count: data.length,
+      first: data[0]?.name,
+      last: data[data.length - 1]?.name,
+    });
 
     // Transform and add computed fields
     return data.map((ex: any) => ({
@@ -462,8 +475,13 @@ export const getExercises = async (filters?: ExerciseFilters): Promise<Exercise[
       updated_at: safeToISOString(ex.updated_at) || new Date().toISOString(),
     })) as Exercise[];
   } catch (error) {
-    console.error('Error fetching exercises:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to load exercises',
+      description: 'Please check your connection',
+      showToast: true,
+      context: 'WorkoutsService.getExercises',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -497,8 +515,13 @@ export const getExerciseById = async (id: string): Promise<Exercise | null> => {
       updated_at: safeToISOString(ex.updated_at) || new Date().toISOString(),
     } as Exercise;
   } catch (error) {
-    console.error('Error fetching exercise:', error);
-    return null;
+    handleError(error, {
+      message: 'Failed to load exercise',
+      description: 'Unable to load exercise details',
+      showToast: true,
+      context: 'WorkoutsService.getExerciseById',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -543,8 +566,13 @@ export const searchExercises = async (query: string, limit: number = 10): Promis
       updated_at: safeToISOString(ex.updated_at) || new Date().toISOString(),
     })) as Exercise[];
   } catch (error) {
-    console.error('Error searching exercises:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to search exercises',
+      description: 'Unable to find exercises',
+      showToast: true,
+      context: 'WorkoutsService.searchExercises',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -580,8 +608,13 @@ export const getExerciseCategories = async (): Promise<Array<{ name: string; cou
       icon: categoryIcons[name] || '🏃',
     }));
   } catch (error) {
-    console.error('Error fetching exercise categories:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to load categories',
+      description: 'Unable to load exercise categories',
+      showToast: true,
+      context: 'WorkoutsService.getExerciseCategories',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 
@@ -603,7 +636,7 @@ export const createWorkoutSession = async (
         user_id: userId,
         workout_id: workoutId,
         status: 'in_progress',
-        started_at: new Date(),
+        started_at: toISOString(new Date()),
       })
       .returning({ id: userWorkoutSessions.id });
 
@@ -613,7 +646,11 @@ export const createWorkoutSession = async (
 
     return { id: result[0].id };
   } catch (error) {
-    console.error('Error creating workout session:', error);
+    handleError(error, {
+      message: 'Failed to create session',
+      context: 'WorkoutsService.createWorkoutSession',
+      // No toast - internal function, handled by workout-sessions service
+    });
     return null;
   }
 };
@@ -634,13 +671,17 @@ export const updateWorkoutSession = async (
       .update(userWorkoutSessions)
       .set({
         ...updates,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(eq(userWorkoutSessions.id, sessionId));
 
     return true;
   } catch (error) {
-    console.error('Error updating workout session:', error);
+    handleError(error, {
+      message: 'Failed to update session',
+      context: 'WorkoutsService.updateWorkoutSession',
+      // No toast - internal function, handled by workout-sessions service
+    });
     return false;
   }
 };
@@ -661,10 +702,10 @@ export const completeWorkoutSession = async (
       .update(userWorkoutSessions)
       .set({
         status: 'completed',
-        completed_at: new Date(),
+        completed_at: toISOString(new Date()),
         duration_seconds: finalStats.duration_seconds,
         calories_burned: finalStats.calories_burned,
-        updated_at: new Date(),
+        updated_at: toISOString(new Date()),
       })
       .where(eq(userWorkoutSessions.id, sessionId));
 
@@ -686,7 +727,11 @@ export const completeWorkoutSession = async (
 
     return true;
   } catch (error) {
-    console.error('Error completing workout session:', error);
+    handleError(error, {
+      message: 'Failed to complete session',
+      context: 'WorkoutsService.completeWorkoutSession',
+      // No toast - internal function, handled by workout-sessions service
+    });
     return false;
   }
 };
@@ -720,8 +765,13 @@ export const getUserWorkoutHistory = async (
       workouts: item.workout,
     }));
   } catch (error) {
-    console.error('Error fetching workout history:', error);
-    return [];
+    handleError(error, {
+      message: 'Failed to load workout history',
+      description: 'Unable to load your workout history',
+      showToast: true,
+      context: 'WorkoutsService.getUserWorkoutHistory',
+    });
+    throw error; // Let React Query handle error state
   }
 };
 

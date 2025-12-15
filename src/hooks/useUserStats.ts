@@ -63,7 +63,7 @@ export function useUserStats() {
           return;
         }
 
-        // Fetch from DB
+        // Fetch from DB (service throws on error after Phase 2)
         const data = await getUserStats(user.id);
 
         if (data) {
@@ -81,6 +81,7 @@ export function useUserStats() {
       } catch (err) {
         logger.error('[Stats] Failed to fetch user stats', err instanceof Error ? err : undefined, { userId: user?.id });
         setError('Failed to load stats');
+        throw err; // Let error propagate for React Query or error boundaries
       } finally {
         setLoading(false);
       }
@@ -161,7 +162,7 @@ export function useWeeklyActivity() {
           return;
         }
 
-        // Fetch from DB
+        // Fetch from DB (service throws on error after Phase 2)
         const data = await getWeeklyActivity(user.id);
 
         setWeeklyData(data);
@@ -175,6 +176,7 @@ export function useWeeklyActivity() {
       } catch (err) {
         logger.error('[Stats] Failed to fetch weekly activity', err instanceof Error ? err : undefined, { userId: user?.id });
         setError('Failed to load weekly data');
+        throw err; // Let error propagate for React Query or error boundaries
       } finally {
         setLoading(false);
       }

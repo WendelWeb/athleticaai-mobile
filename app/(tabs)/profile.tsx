@@ -9,7 +9,7 @@
  * - Sign out
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -30,25 +30,43 @@ import { Card } from '@components/ui/Card';
 import { Button } from '@components/ui/Button';
 import { Badge } from '@components/ui/Badge';
 import { Skeleton } from '@components/ui/Skeleton';
+import { ErrorState } from '@/components/ui/ErrorState';
 import { LevelBadge } from '@components/ui/LevelBadge';
 import { useClerkAuth } from '@/hooks/useClerkAuth';
 import { useUserStats } from '@/hooks/useUserStats';
 import { useRevenueCat } from '@/hooks/useRevenueCat';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useToast } from '@/components/Toast';
+import { toggleCoachMode } from '@/services/drizzle/coaching';
+import { toISOString } from '@/utils';
 
 export default function ProfileScreen() {
   const theme = useStyledTheme();
   const { toggleTheme } = useTheme();
   const router = useRouter();
-  const { user, profile, signOut } = useClerkAuth();
+  const { user, profile, signOut, refreshProfile } = useClerkAuth();
 
   // Real stats from Supabase
-  const { stats: userStats, loading: statsLoading, refresh: refreshStats, refreshing: statsRefreshing } = useUserStats();
+  const { stats: userStats, loading: statsLoading, error: statsError, refresh: refreshStats, refreshing: statsRefreshing } = useUserStats();
 
   // Premium status from RevenueCat
   const { isPremium } = useRevenueCat();
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(theme.isDark);
+  const [isCoach, setIsCoach] = useState(profile?.is_coach || false);
+  const [isTogglingCoachMode, setIsTogglingCoachMode] = useState(false);
+
+  const { showSuccess, showError } = useToast();
+
+  // Sync local state with profile when it updates
+  useEffect(() => {
+    console.log('🔄 Profile changed, is_coach:', profile?.is_coach);
+    if (profile?.is_coach !== undefined) {
+      setIsCoach(profile.is_coach);
+      console.log('✅ Synced isCoach to:', profile.is_coach);
+    }
+  }, [profile?.is_coach]);
 
   // Theme colors
   const bgColors = {
@@ -146,13 +164,10 @@ export default function ProfileScreen() {
         await db.update(profiles)
           .set({
             notifications_enabled: value,
-            updated_at: new Date(),
+            updated_at: toISOString(new Date()),
           })
           .where(eq(profiles.id, user.id));
-
-        console.log('Notification preferences saved!');
       } catch (error) {
-        console.error('Error saving notification preferences:', error);
         // Revert UI if save failed
         setNotificationsEnabled(!value);
       }
@@ -168,38 +183,73 @@ export default function ProfileScreen() {
     // Toggle theme in ThemeProvider
     toggleTheme();
 
-    // Optionally save preference to user profile (for cross-device sync)
-    if (user) {
-      try {
-        const { db, profiles } = await import('@/db');
-        const { eq } = await import('drizzle-orm');
+    // Note: Theme preference is stored in AsyncStorage by ThemeProvider
+    // Could sync to DB for cross-device support in future
+  };
 
-        // Store theme preference as metadata (could add a theme_preference column)
-        console.log('Theme preference:', value ? 'dark' : 'light');
-        // await db.update(profiles)
-        //   .set({
-        //     theme_preference: value ? 'dark' : 'light',
-        //     updated_at: new Date(),
-        //   })
-        //   .where(eq(profiles.id, user.id));
-      } catch (error) {
-        console.error('Error saving theme preference:', error);
+  const handleCoachModeToggle = async (value: boolean) => {
+    if (!user) {
+      console.log('❌ No user found');
+      return;
+    }
+
+    console.log('🎯 Toggle coach mode:', { userId: user.id, value });
+
+    if (Platform.OS === 'ios') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+
+    setIsTogglingCoachMode(true);
+
+    try {
+      console.log('📡 Calling toggleCoachMode API...');
+      const success = await toggleCoachMode(user.id, value);
+      console.log('✅ toggleCoachMode result:', success);
+
+      if (success) {
+        // Update local state immediately for responsive UI
+        setIsCoach(value);
+        console.log('✅ Local state updated to:', value);
+
+        // Refresh profile from database to get updated is_coach value
+        console.log('🔄 Refreshing profile...');
+        await refreshProfile();
+        console.log('✅ Profile refreshed');
+
+        showSuccess(
+          value ? 'Coach Mode Enabled!' : 'Coach Mode Disabled',
+          value ? 'You can now create programs for clients' : 'You are no longer in coach mode'
+        );
+      } else {
+        console.error('❌ toggleCoachMode returned false');
+        throw new Error('Failed to toggle coach mode');
       }
+    } catch (error) {
+      console.error('❌ Coach mode toggle error:', error);
+      showError(
+        'Failed to Update',
+        'Could not toggle coach mode. Please try again.'
+      );
+      // Revert on error
+      setIsCoach(!value);
+    } finally {
+      setIsTogglingCoachMode(false);
     }
   };
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: bgColors.primary }]}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl
-          refreshing={statsRefreshing}
-          onRefresh={onRefresh}
-          tintColor={theme.colors.primary[500]}
-        />
-      }
-    >
+    <SafeAreaView style={{ flex: 1, backgroundColor: bgColors.primary }} edges={['top']}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={statsRefreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.colors.primary[500]}
+          />
+        }
+      >
       {/* Profile Header */}
       <View style={styles.header}>
         {/* Avatar */}
@@ -241,28 +291,36 @@ export default function ProfileScreen() {
         </Text>
 
         {/* Stats Row (Social Preview) */}
-        <View style={styles.socialStats}>
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: textColors.primary }]}>
-              {stats.workoutsCompleted}
-            </Text>
-            <Text style={[styles.statLabel, { color: textColors.tertiary }]}>Workouts</Text>
+        {statsError ? (
+          <ErrorState
+            error={statsError}
+            onRetry={refreshStats}
+            compact
+          />
+        ) : (
+          <View style={styles.socialStats}>
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: textColors.primary }]}>
+                {stats.workoutsCompleted}
+              </Text>
+              <Text style={[styles.statLabel, { color: textColors.tertiary }]}>Workouts</Text>
+            </View>
+            <View style={[styles.statDivider, { backgroundColor: bgColors.border }]} />
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: textColors.primary }]}>
+                {stats.followers}
+              </Text>
+              <Text style={[styles.statLabel, { color: textColors.tertiary }]}>Followers</Text>
+            </View>
+            <View style={[styles.statDivider, { backgroundColor: bgColors.border }]} />
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: textColors.primary }]}>
+                {stats.following}
+              </Text>
+              <Text style={[styles.statLabel, { color: textColors.tertiary }]}>Following</Text>
+            </View>
           </View>
-          <View style={[styles.statDivider, { backgroundColor: bgColors.border }]} />
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: textColors.primary }]}>
-              {stats.followers}
-            </Text>
-            <Text style={[styles.statLabel, { color: textColors.tertiary }]}>Followers</Text>
-          </View>
-          <View style={[styles.statDivider, { backgroundColor: bgColors.border }]} />
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: textColors.primary }]}>
-              {stats.following}
-            </Text>
-            <Text style={[styles.statLabel, { color: textColors.tertiary }]}>Following</Text>
-          </View>
-        </View>
+        )}
 
         {/* Edit Profile Button */}
         <Button variant="secondary" size="md" onPress={handleEditProfile}>
@@ -271,6 +329,49 @@ export default function ProfileScreen() {
       </View>
 
       <View style={{ height: theme.spacing.lg }} />
+
+      {/* BETA MODE: Premium Status Badge */}
+      {isPremium && (
+        <>
+          <View
+            style={[
+              styles.betaModeCard,
+              {
+                backgroundColor: theme.colors.primary[500] + '20',
+                borderColor: theme.colors.primary[500],
+              },
+            ]}
+          >
+            <View style={styles.betaModeContent}>
+              <View
+                style={[
+                  styles.betaModeIcon,
+                  { backgroundColor: theme.colors.primary[500] },
+                ]}
+              >
+                <Ionicons name="flash" size={20} color="#FFFFFF" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={[
+                    styles.betaModeTitle,
+                    { color: theme.colors.primary[500] },
+                  ]}
+                >
+                  BETA MODE
+                </Text>
+                <Text style={[styles.betaModeSubtitle, { color: textColors.secondary }]}>
+                  All premium features unlocked for testing
+                </Text>
+              </View>
+              <View style={[styles.betaBadge, { backgroundColor: theme.colors.success[500] }]}>
+                <Text style={styles.betaBadgeText}>Premium Active</Text>
+              </View>
+            </View>
+          </View>
+          <View style={{ height: theme.spacing.lg }} />
+        </>
+      )}
 
       {/* Premium Upsell (if not premium) */}
       {!isPremium && (
@@ -457,6 +558,34 @@ export default function ProfileScreen() {
             onValueChange={handleDarkModeToggle}
             trackColor={{ false: bgColors.border, true: theme.colors.secondary[500] + '80' }}
             thumbColor={darkModeEnabled ? theme.colors.secondary[500] : '#f4f3f4'}
+          />
+        </TouchableOpacity>
+
+        {/* Become a Coach */}
+        <TouchableOpacity
+          style={[styles.menuItem, { borderBottomColor: bgColors.border }]}
+          activeOpacity={0.7}
+          disabled={isTogglingCoachMode}
+        >
+          <View style={styles.menuItemLeft}>
+            <View style={[styles.menuIcon, { backgroundColor: theme.colors.warning[500] + '20' }]}>
+              <Ionicons name="school" size={20} color={theme.colors.warning[500]} />
+            </View>
+            <View>
+              <Text style={[styles.menuLabel, { color: textColors.primary }]}>
+                Become a Coach
+              </Text>
+              <Text style={{ fontSize: 12, color: textColors.tertiary, marginTop: 2 }}>
+                Create programs and manage clients
+              </Text>
+            </View>
+          </View>
+          <Switch
+            value={isCoach}
+            onValueChange={handleCoachModeToggle}
+            disabled={isTogglingCoachMode}
+            trackColor={{ false: bgColors.border, true: theme.colors.warning[500] + '80' }}
+            thumbColor={isCoach ? theme.colors.warning[500] : '#f4f3f4'}
           />
         </TouchableOpacity>
 
@@ -699,7 +828,8 @@ export default function ProfileScreen() {
       </Button>
 
       <View style={{ height: theme.spacing.xl }} />
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -709,8 +839,8 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 24,
-    paddingTop: 60,
-    paddingBottom: 100,
+    // paddingTop is set dynamically with safe area insets
+    paddingBottom: 100, // Safety space to avoid tab bar overlap
   },
   header: {
     alignItems: 'center',
@@ -887,5 +1017,43 @@ const styles = StyleSheet.create({
   },
   menuValue: {
     fontSize: 15,
+  },
+  betaModeCard: {
+    borderRadius: 16,
+    borderWidth: 2,
+    padding: 16,
+    marginHorizontal: 24,
+  },
+  betaModeContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  betaModeIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  betaModeTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  betaModeSubtitle: {
+    fontSize: 13,
+  },
+  betaBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  betaBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
   },
 });

@@ -80,17 +80,11 @@ export const useClerkAuth = (): UseClerkAuthReturn => {
         setIsProfileLoading(true);
         setError(null);
 
-        logger.debug('[Auth] Loading profile', { userId: uid });
+        // Services now throw errors instead of returning {profile, error} (Phase 2)
+        const { profile: fetchedProfile } = await getProfile(uid);
 
-        const { profile: fetchedProfile, error: profileError } = await getProfile(uid);
-
-        if (profileError) {
-          logger.warn('[Auth] Profile fetch error', { userId: uid, error: profileError });
-          setError('Failed to load profile');
-          setProfile(null);
-        } else if (!fetchedProfile) {
+        if (!fetchedProfile) {
           // Profile doesn't exist → create it automatically
-          logger.info('[Auth] Creating new profile', { userId: uid, email: userEmail });
           const { createProfile } = await import('@/services/drizzle/profile');
 
           // Build full_name from firstName + lastName
@@ -99,22 +93,14 @@ export const useClerkAuth = (): UseClerkAuthReturn => {
               ? `${userFirstName} ${userLastName}`
               : userFirstName || userLastName || '';
 
-          const { profile: newProfile, error: createError } = await createProfile(
+          const { profile: newProfile } = await createProfile(
             uid,
             userEmail || '',
             fullName
           );
 
-          if (createError) {
-            logger.error('[Auth] Failed to create profile', createError, { userId: uid });
-            setError('Failed to create profile');
-            setProfile(null);
-          } else {
-            logger.info('[Auth] Profile created successfully', { userId: uid });
-            setProfile(newProfile);
-          }
+          setProfile(newProfile);
         } else {
-          logger.debug('[Auth] Profile loaded successfully', { userId: uid });
           setProfile(fetchedProfile);
         }
       } catch (err) {
@@ -122,6 +108,7 @@ export const useClerkAuth = (): UseClerkAuthReturn => {
         logger.error('[Auth] Failed to load profile', err instanceof Error ? err : undefined, { userId: uid });
         setError(message);
         setProfile(null);
+        throw err; // Let error propagate for error boundaries
       } finally {
         setIsProfileLoading(false);
       }
@@ -146,12 +133,10 @@ export const useClerkAuth = (): UseClerkAuthReturn => {
    */
   const signOut = useCallback(async () => {
     try {
-      logger.info('[Auth] Signing out');
       await clerkSignOut();
       setProfile(null);
       setError(null);
       loadedUserIdRef.current = null; // Reset ref to allow re-login
-      logger.info('[Auth] Sign out successful');
     } catch (err) {
       const message = getErrorMessage(err);
       logger.error('[Auth] Failed to sign out', err instanceof Error ? err : undefined);
@@ -255,7 +240,6 @@ export const useRequireAuth = () => {
     if (isLoaded && !isSignedIn) {
       // Redirect to sign-in
       // Note: Use Expo Router navigation
-      logger.warn('[Auth] User not authenticated - should redirect to /auth/sign-in');
     }
   }, [isLoaded, isSignedIn]);
 
