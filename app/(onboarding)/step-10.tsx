@@ -13,6 +13,8 @@ import { useStyledTheme } from '@theme/ThemeProvider';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import { db } from '@/db';
 import { useClerkAuth } from '@/hooks/useClerkAuth';
+import { validateOnboardingData } from '@/validation/onboarding';
+import { toISOString } from '@/utils';
 
 export default function Step10Target() {
   const router = useRouter();
@@ -64,10 +66,52 @@ export default function Step10Target() {
         target_weight_kg: parseFloat(targetWeight),
         target_date: targetDate,
         motivation: motivation.trim(),
-        completed_at: new Date().toISOString(),
+        completed_at: toISOString(new Date()),
       };
 
       updateData(completedData);
+
+      // ✅ COMPREHENSIVE ZOD VALIDATION - Validate ALL onboarding data before saving
+      const completeOnboardingData = {
+        goal: data.goal,
+        fitness_level: data.fitness_level,
+        age: data.age,
+        gender: data.gender,
+        height_cm: data.height_cm,
+        weight_kg: data.weight_kg,
+        workout_frequency: data.days_per_week,
+        available_equipment: data.equipment_available || [],
+        has_injuries: (data.injuries && data.injuries.length > 0) || false,
+        injury_details: data.notes || undefined,
+        avoid_exercises: data.injuries || [],
+        dietary_preferences: [], // Step 8 not implemented yet
+        notifications: {
+          workout_reminders: true,
+          progress_updates: true,
+          community_updates: false,
+          marketing: false,
+        },
+      };
+
+      // Validate complete onboarding data with Zod
+      const validationResult = validateOnboardingData(completeOnboardingData);
+
+      if (!validationResult.success) {
+        // Show first validation error to user
+        const firstError = validationResult.error.errors[0];
+        const errorMessage = firstError.message || 'Invalid data';
+        const errorField = firstError.path.join('.') || 'Unknown field';
+
+        Alert.alert(
+          'Invalid Data',
+          `${errorField}: ${errorMessage}\n\nPlease go back and check your information.`
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Data is now validated and safe to save
+      const validatedData = validationResult.data;
 
       // Save onboarding data to database with Drizzle
       if (user) {
@@ -145,10 +189,10 @@ export default function Step10Target() {
 
             // Completion status
             onboarding_completed: true,
-            onboarding_completed_at: new Date(),
+            onboarding_completed_at: toISOString(new Date()),
 
             // Updated timestamp
-            updated_at: new Date(),
+            updated_at: toISOString(new Date()),
           })
           .where(eq(profiles.id, user.id))
           .returning();

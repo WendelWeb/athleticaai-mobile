@@ -34,6 +34,7 @@ import { useStyledTheme } from '@theme/ThemeProvider';
 import { Button, Badge } from '@components/ui';
 import { getWorkoutById } from '@services/workouts';
 import type { Workout } from '@/types/workout';
+import { toISOString } from '@/utils';
 
 const { width, height } = Dimensions.get('window');
 const HEADER_HEIGHT = 400;
@@ -215,7 +216,7 @@ export default function WorkoutDetailScreen() {
 
       <Animated.ScrollView
         onScroll={scrollHandler}
-        scrollEventThrottle={16}
+        scrollEventThrottle={100} // Optimized: 100ms instead of 16ms - smoother performance
         showsVerticalScrollIndicator={false}
       >
         {/* Hero Image Section */}

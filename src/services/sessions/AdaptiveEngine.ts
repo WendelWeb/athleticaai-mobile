@@ -30,7 +30,7 @@ import {
 } from '@/db/schema-workout-sessions';
 import { exercises } from '@/db/schema';
 import { eq, and, desc, sql } from 'drizzle-orm';
-import { logger } from '@/utils/logger';
+import { logger, toISOString } from '@/utils';
 import type {
   AdaptiveRestCalculation,
   ExerciseRecommendationData,
@@ -688,7 +688,7 @@ class AdaptiveEngineService {
             average_rpe: sessionData.average_rpe?.toString(),
             average_form_quality: sessionData.average_form_quality?.toString(),
             last_calculated_at: new Date(),
-            updated_at: new Date(),
+            updated_at: toISOString(new Date()),
           })
           .where(
             and(

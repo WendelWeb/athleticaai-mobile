@@ -33,7 +33,7 @@ import {
 } from '@/db/schema-workout-sessions';
 import { workouts, exercises } from '@/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
-import { logger } from '@/utils/logger';
+import { logger, toISOString } from '@/utils';
 import type {
   SessionState,
   ExerciseStatus,
@@ -359,8 +359,9 @@ class SessionManagerService {
       }
 
       const now = new Date();
-      const totalDuration = session.started_at
-        ? Math.floor((now.getTime() - session.started_at.getTime()) / 1000)
+      const startedAt = session.started_at ? new Date(session.started_at) : null;
+      const totalDuration = startedAt && !isNaN(startedAt.getTime())
+        ? Math.floor((now.getTime() - startedAt.getTime()) / 1000)
         : 0;
       const activeDuration = totalDuration - (session.total_paused_seconds || 0);
 
