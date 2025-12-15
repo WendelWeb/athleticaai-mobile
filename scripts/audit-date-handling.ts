@@ -48,17 +48,25 @@ function auditFile(filePath: string) {
       const trimmed = line.trim();
 
       // CRITICAL: Database timestamp assignments with new Date()
+      // BUT: Ignore if already using .toISOString() (e.g., "new Date().toISOString()")
       if (
         /(?:started_at|completed_at|scheduled_at|created_at|updated_at|last_login):\s*new Date\(\)/.test(
           line
-        )
+        ) &&
+        !line.includes('new Date().toISOString()')
       ) {
+        // Also check if this is in a TypeScript file with typed objects (optimistic UI updates)
+        // These are often correct when the type is Date (not string)
+        const isOptimisticUpdate = line.includes('optimistic') || trimmed.includes('const ') || trimmed.includes('=');
+
         issues.push({
           file: fileName,
           line: lineNum,
           code: trimmed,
-          issue: 'Database timestamp using new Date() instead of ISO string',
-          severity: 'HIGH',
+          issue: isOptimisticUpdate
+            ? 'Database timestamp using new Date() (verify type expects Date not string)'
+            : 'Database timestamp using new Date() instead of ISO string',
+          severity: isOptimisticUpdate ? 'MEDIUM' : 'HIGH',
           category: 'Database Timestamps',
         });
       }
